@@ -56,7 +56,7 @@
         "hidden": false,
         "order": 1
       },
-      "preLaunchTask": "",
+      "preLaunchTask": "Install modules",
       "configurations": [
         "Chrome",
         "React",
