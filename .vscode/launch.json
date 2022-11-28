@@ -15,8 +15,13 @@
         "NODE_ENV": "development"
       },
       "cwd": "${workspaceFolder}/server",
-      "runtimeExecutable": "nodemon",
-      "program": "${workspaceFolder}/server/src/index.ts",
+      // "runtimeExecutable": "nodemon",
+      // "program": "${workspaceFolder}/server/src/index.ts",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "run-script",
+        "dev"
+      ],
       "outFiles": [
         "${workspaceFolder}/server/dist/**/*.js"
       ],
@@ -56,7 +61,7 @@
         "hidden": false,
         "order": 1
       },
-      "preLaunchTask": "Install modules",
+      // "preLaunchTask": "Install modules",
       "configurations": [
         "Chrome",
         "React",
