@@ -1,0 +1,51 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "type": "shell",
+      "label": "Install Server modules",
+      "detail": "install dependencies from package for server",
+      "command": "yarn install",
+      "options": {
+        "cwd": "${workspaceFolder}/server"
+      },
+      "hide": true
+    },
+    {
+      "type": "shell",
+      "label": "Install UI modules",
+      "detail": "install dependencies from package for server",
+      "command": "yarn install",
+      "options": {
+        "cwd": "${workspaceFolder}/ui"
+      },
+      "hide": true
+    },
+    {
+      "type": "shell",
+      "label": "Install modules",
+      "detail": "install dependencies from package for server",
+      "command": "echo ",
+      "dependsOn": [
+        "Install Server modules",
+
+        "Install UI modules"
+      ],
+      "promptOnClose": true,
+      "group": {
+        "kind": "test",
+        "isDefault": true
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Build Server",
+      "detail": "Build Server",
+      "type": "npm",
+      "script": "build",
+      "options": {
+        "cwd": "${workspaceFolder}/server"
+      },
+    }
+  ],
+}

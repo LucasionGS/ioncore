@@ -1,0 +1,24 @@
+{
+	"folders": [
+		{
+			"path": "./ui",
+			"name": "UI"
+		},
+		{
+			"path": "./server",
+			"name": "Server"
+		},
+		{
+			"path": ".",
+			"name": "."
+		}
+	],
+	"settings": {
+		"terminal.integrated.splitCwd": "workspaceRoot"
+	},
+	"extensions": {
+		"recommendations": [
+			"SanaAjani.taskrunnercode"
+		]
+	}
+}

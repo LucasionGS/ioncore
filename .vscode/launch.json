@@ -1,0 +1,67 @@
+{
+  // Use IntelliSense to learn about possible attributes.
+  // Hover to view descriptions of existing attributes.
+  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Server",
+      "skipFiles": [
+        "<node_internals>/**"
+      ],
+      "env": {
+        "NODE_ENV": "development"
+      },
+      "cwd": "${workspaceFolder}/server",
+      "runtimeExecutable": "nodemon",
+      "program": "${workspaceFolder}/server/src/index.ts",
+      "outFiles": [
+        "${workspaceFolder}/server/dist/**/*.js"
+      ],
+
+    },
+    // React in ioncore-dash
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "React",
+      "skipFiles": [
+        "<node_internals>/**"
+      ],
+      "cwd": "${workspaceFolder}/ui",
+      "env": {
+        "PORT": "12463",
+      },
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "run-script",
+        "start"
+      ],
+    },
+    {
+      "type": "chrome",
+      "request": "launch",
+      "name": "Chrome",
+      "url": "http://localhost:3080", // This should be changed if not using the default IP/Port
+      "webRoot": "${workspaceFolder}/ui",
+    },
+  ],
+  "compounds": [
+    {
+      "name": "All",
+      "stopAll": true,
+      "presentation": {
+        "hidden": false,
+        "order": 1
+      },
+      "preLaunchTask": "",
+      "configurations": [
+        "Chrome",
+        "React",
+        "Server",
+      ]
+    }
+  ],
+}
