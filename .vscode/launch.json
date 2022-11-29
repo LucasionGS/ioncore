@@ -22,10 +22,10 @@
         "run-script",
         "dev"
       ],
-      "outFiles": [
-        "${workspaceFolder}/server/dist/**/*.js"
-      ],
-
+      "localRoot": "${workspaceFolder}/server/src",
+      // "outFiles": [
+      //   "${workspaceFolder}/server/dist/**/*.js"
+      // ],
     },
     // React in ioncore-dash
     {
@@ -38,6 +38,7 @@
       "cwd": "${workspaceFolder}/ui",
       "env": {
         "PORT": "12463",
+        "NODE_ENV": "development"
       },
       "runtimeExecutable": "npm",
       "runtimeArgs": [
