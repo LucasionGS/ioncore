@@ -25,27 +25,54 @@
       "type": "shell",
       "label": "Install modules",
       "detail": "install dependencies from package for server",
-      "command": "echo ",
+      "command": "echo Installed modules",
       "dependsOn": [
         "Install Server modules",
-
         "Install UI modules"
       ],
-      "promptOnClose": true,
-      "group": {
-        "kind": "test",
-        "isDefault": true
-      },
       "problemMatcher": []
     },
     {
       "label": "Build Server",
       "detail": "Build Server",
       "type": "npm",
-      "script": "build",
+      "script": "build-server",
       "options": {
         "cwd": "${workspaceFolder}/server"
       },
-    }
+      "problemMatcher": [],
+      "dependsOn": ["Install Server modules"],
+      "hide": true
+    },
+    {
+      "label": "Build UI",
+      "detail": "Build UI",
+      "type": "npm",
+      "script": "build",
+      "options": {
+        "cwd": "${workspaceFolder}/ui"
+      },
+      "problemMatcher": [],
+      "dependsOn": ["Install UI modules"],
+      "hide": true
+    },
+    {
+      "type": "shell",
+      "label": "Build all",
+      "detail": "Build all",
+      "dependsOn": [
+        "Build UI",
+        "Build Server",
+      ],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "command": "rm -rf dist && mkdir -p dist && mv server/build dist/server && mv ui/build dist/public && cp -r server/package.json dist/package.json && yarn install --production --cwd dist",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": []
+    },
   ],
 }

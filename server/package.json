@@ -2,12 +2,12 @@
   "name": "ion-project-server",
   "version": "1.0.0",
   "description": "",
-  "main": "dist/index.js",
+  "main": "server/index.js",
   "scripts": {
     "watch": "tsc -w",
     "start": "node .",
     "dev": "nodemon ./src/index.ts",
-    "build": "tsc --outDir build"
+    "build-server": "tsc --outDir build"
   },
   "keywords": [],
   "author": "Lucasion",
