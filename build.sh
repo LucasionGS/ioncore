@@ -3,18 +3,49 @@ UI="ui"
 OUTPUT="dist"
 
 # Build UI
-cd $UI
+echo "Compiling UI..."
+cd "$UI"
 yarn install
 yarn build
 
 # Build server
-cd $SERVER
+echo "Compiling server..."
+cd "../$SERVER"
 yarn install
-yarn build
+yarn run build-server
 
 # Combine
+echo "Combining UI and server..."
+cd ..
 rm -r dist && mkdir -p dist
 mv "$SERVER/build" "$OUTPUT/$SERVER"
 mv "$UI/build" "$OUTPUT/public"
 cp -r "$SERVER/package.json" "$OUTPUT/package.json"
 yarn install --production --cwd "$OUTPUT"
+
+# Copy .env-production to .env
+if [ -f "$SERVER/.env-production" ]; then
+  echo "Copying $SERVER/.env-production to .env..."
+  cp "$SERVER/.env-production" "$OUTPUT/.env"
+elif [ -f "$SERVER/.env" ]; then
+  echo "Copying $SERVER/.env to .env..."
+  cp "$SERVER/.env" "$OUTPUT/.env"
+else
+  echo "No .env file found. Using default values."
+fi
+
+# Build finished
+REAL_OUTPUT=$(realpath "$OUTPUT")
+echo "Build finished. Output in $REAL_OUTPUT"
+
+# If post-build.sh exists, run it
+if [ -f "post-build.sh" ]; then
+  echo "Running post-build.sh..."
+  ./post-build.sh
+
+  if [ $? -ne 0 ]; then
+    echo "post-build.sh failed."
+    exit 1
+  fi
+  echo "post-build.sh finished."
+fi
