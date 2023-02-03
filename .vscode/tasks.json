@@ -68,7 +68,7 @@
         "kind": "build",
         "isDefault": true
       },
-      "command": "rm -rf dist && mkdir -p dist && mv server/build dist/server && mv ui/build dist/public && cp -r server/package.json dist/package.json && yarn install --production --cwd dist",
+      "command": "rm -rf dist && mkdir -p dist && mv server/build dist/server && mv ui/dist dist/public && cp -r server/package.json dist/package.json && yarn install --production --cwd dist",
       "options": {
         "cwd": "${workspaceFolder}"
       },

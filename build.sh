@@ -17,9 +17,13 @@ yarn run build-server
 # Combine
 echo "Combining UI and server..."
 cd ..
-rm -r dist && mkdir -p dist
+if [ -d "dist" ]; then
+  echo "Removing old dist..."
+  rm -r dist
+fi
+mkdir -p dist
 mv "$SERVER/build" "$OUTPUT/$SERVER"
-mv "$UI/build" "$OUTPUT/public"
+mv "$UI/dist" "$OUTPUT/public"
 cp -r "$SERVER/package.json" "$OUTPUT/package.json"
 yarn install --production --cwd "$OUTPUT"
 
