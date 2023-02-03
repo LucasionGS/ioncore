@@ -32,7 +32,7 @@ if (process.env.NODE_ENV === "development") {
 }
 else {
   // Serve static files from the build folder
-  app.use(express.static("public"));
+  app.use(express.static("public"), (req, res) => res.sendFile("index.html", { root: "public" }));
   app.listen(port, () => {
     console.log(`Server started at http://localhost:${port} in PRODUCTION mode`);
   });
