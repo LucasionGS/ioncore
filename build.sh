@@ -41,7 +41,7 @@ echo "Build finished. Output in $REAL_OUTPUT"
 # If post-build.sh exists, run it
 if [ -f "post-build.sh" ]; then
   echo "Running post-build.sh..."
-  ./post-build.sh
+  ./post-build.sh "$REAL_OUTPUT"
 
   if [ $? -ne 0 ]; then
     echo "post-build.sh failed."
