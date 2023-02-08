@@ -58,19 +58,32 @@ export class User extends Model<UserAttributes> implements UserAttributes {
     username: string;
     password: string;
   }) {
-    User.findOne({
+    return User.findOne({
       where: {
         username: data.username,
       },
     }).then((user) => {
       if (!user) {
-        return false;
+        return null;
       }
 
-      return user.comparePassword(data.password);
+      return user.comparePassword(data.password) ? user : null;
     });
+  }
 
-    return false;
+  public toJSON() {
+    return {
+      id: this.id,
+      username: this.username,
+    };
+  }
+
+  public async toFullJSON() {
+    return {
+      id: this.id,
+      username: this.username,
+      roles: (await this.getRoles()).map(role => role.toJSON()),
+    };
   }
 }
 
@@ -166,11 +179,16 @@ export class Role extends Model<RoleAttributes> implements RoleAttributes {
   }
 
   public static async getRoleById(id: string) {
-    return Role.findOne({
-      where: {
-        id,
-      },
-    });
+    return Role.findByPk(id);
+  }
+
+  public toJSON() {
+    return {
+      id: this.id,
+      name: this.name,
+      inherit: this.inherit,
+      permissions: this.getPermissionList(),
+    };
   }
 }
 
