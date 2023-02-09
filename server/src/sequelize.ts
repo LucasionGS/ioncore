@@ -1,9 +1,18 @@
 import { Sequelize, Model, DataTypes, Op } from "sequelize";
 import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
+import AppSystem from "./AppSystem";
+import { fstat } from "fs";
+import fs from "fs";
+import Path from "path";
 
+process.env.JWT_SECRET ||= "ioncorejsonwebtokensecret";
+if (!AppSystem.createDir(Path.dirname(AppSystem.getSqliteDatabasePath()))) {
+  throw new Error("Failed to create database directory");
+}
 const sequelize = new Sequelize({
   dialect: "sqlite",
-  storage: "db.sqlite",
+  storage: AppSystem.getSqliteDatabasePath(),
   logging: false,
 });
 
@@ -84,6 +93,15 @@ export class User extends Model<UserAttributes> implements UserAttributes {
       username: this.username,
       roles: (await this.getRoles()).map(role => role.toJSON()),
     };
+  }
+
+  public jwt() {
+    return jwt.sign({
+      id: this.id,
+      username: this.username,
+    }, process.env.JWT_SECRET, {
+      expiresIn: "21d",
+    });
   }
 }
 
