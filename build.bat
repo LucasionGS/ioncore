@@ -1,12 +1,12 @@
 @echo off
 
-SET SERVER="server"
-SET UI="ui"
-SET OUTPUT="dist"
+SET SERVER=server
+SET CLIENT=client
+SET OUTPUT=dist
 
-REM Build UI
-echo Compiling UI...
-cd %UI%
+REM Build client
+echo Compiling CLIENT...
+cd %CLIENT%
 call yarn install
 call yarn build
 
@@ -17,7 +17,7 @@ call yarn install
 call yarn run build-server
 
 REM Combine
-echo Combining UI and server...
+echo Combining CLIENT and server...
 cd ..
 IF EXIST %OUTPUT% (
   echo Removing old dist...
@@ -25,7 +25,7 @@ IF EXIST %OUTPUT% (
 )
 mkdir %OUTPUT%
 move %SERVER%\build %OUTPUT%\%SERVER%
-move %UI%\dist %OUTPUT%\public
+move %CLIENT%\dist %OUTPUT%\public
 copy %SERVER%\package.json %OUTPUT%\package.json
 call yarn install --production --cwd %OUTPUT%
 

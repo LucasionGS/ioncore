@@ -1,10 +1,10 @@
 SERVER="server"
-UI="ui"
+CLIENT="client"
 OUTPUT="dist"
 
-# Build UI
-echo "Compiling UI..."
-cd "$UI"
+# Build client
+echo "Compiling CLIENT..."
+cd "$CLIENT"
 yarn install
 yarn build
 
@@ -15,7 +15,7 @@ yarn install
 yarn run build-server
 
 # Combine
-echo "Combining UI and server..."
+echo "Combining CLIENT and server..."
 cd ..
 if [ -d "dist" ]; then
   echo "Removing old dist..."
@@ -23,7 +23,7 @@ if [ -d "dist" ]; then
 fi
 mkdir -p dist
 mv "$SERVER/build" "$OUTPUT/$SERVER"
-mv "$UI/dist" "$OUTPUT/public"
+mv "$CLIENT/dist" "$OUTPUT/public"
 cp -r "$SERVER/package.json" "$OUTPUT/package.json"
 yarn install --production --cwd "$OUTPUT"
 
