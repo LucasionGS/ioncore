@@ -1,4 +1,4 @@
-import { Router, json } from "express";
+import { Router } from "express";
 import { User } from "../sequelize";
 
 namespace UserController {
@@ -9,7 +9,7 @@ namespace UserController {
   });
 
   // Login
-  router.post("/login", json(), (req, res) => {
+  router.post("/login", (req, res) => {
     const { username, password } = req.body;
 
     if (!username || !password) {

@@ -6,7 +6,7 @@ import { fstat } from "fs";
 import fs from "fs";
 import Path from "path";
 
-process.env.JWT_SECRET ||= "ioncorejsonwebtokensecret";
+process.env.JWT_SECRET ||= "ioncorejsonwebtokensecret_" + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
 if (!AppSystem.createDir(Path.dirname(AppSystem.getSqliteDatabasePath()))) {
   throw new Error("Failed to create database directory");
 }
@@ -266,20 +266,3 @@ UserRole.init({
 
 
 export default sequelize;
-
-const syncAlter = true;
-const syncForce = false;
-const firstLoginCreateDefaultUser = true;
-
-sequelize.sync({ alter: syncAlter, force: syncForce }).then(async () => {
-  let userRole = await Role.getRoleByName("user");
-  const adminRole = await Role.getRoleByName("admin");
-
-  if (!userRole) {
-    userRole = await Role.registerRole({ name: "user" });
-  }
-
-  if (!adminRole) {
-    await Role.registerRole({ name: "admin" });
-  }
-});

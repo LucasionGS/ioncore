@@ -2,10 +2,15 @@
   "name": "ion-project-server",
   "version": "1.0.0",
   "description": "",
-  "main": "server/index.js",
+  "main": "dist/index.js",
+  "bin": {
+    "ioncore": "dist/commandline.js"
+  },
   "scripts": {
     "watch": "tsc -w",
     "start": "node .",
+    "ic": "node dist/commandline.js",
+    "ic sync": "node dist/commandline.js sync",
     "dev": "nodemon ./src/index.ts",
     "build-server": "tsc --outDir build"
   },
