@@ -19,7 +19,7 @@
       ],
       "localRoot": "${workspaceFolder}/server/src",
     },
-    // React in ioncore-ui using vite
+    // React in ioncore-client using vite
     {
       "type": "node",
       "request": "launch",
@@ -27,7 +27,7 @@
       "skipFiles": [
         "<node_internals>/**"
       ],
-      "cwd": "${workspaceFolder}/ui",
+      "cwd": "${workspaceFolder}/client",
       "env": {
         "PORT": "12463",
         "NODE_ENV": "development"
@@ -44,7 +44,7 @@
       "request": "launch",
       "name": "Chrome",
       "url": "http://localhost:3080", // This should be changed if not using the default IP/Port
-      "webRoot": "${workspaceFolder}/ui",
+      "webRoot": "${workspaceFolder}/client",
     },
   ],
   "compounds": [
