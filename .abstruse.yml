@@ -1,0 +1,17 @@
+image: ubuntu:latest
+
+matrix:
+  - env: SCRIPT_FILE=build.sh NODE_VERSION=16
+
+cache:
+  - server/node_modules
+  - ui/node_modules
+
+install:
+  - apt update && apt install -y wget
+  - wget -qO- https://raw.githubusercontent.com/nvm-sh/nvm/v0.37.2/install.sh | bash
+  - nvm install $NODE_VERSION
+  - npm i -g yarn
+
+script:
+  - if [[ "$SCRIPT_FILE" ]]; then ./$SCRIPT_FILE; fi

@@ -1,8 +1,8 @@
 {
 	"folders": [
 		{
-			"path": "./ui",
-			"name": "UI"
+			"path": "./client",
+			"name": "Client"
 		},
 		{
 			"path": "./server",
@@ -10,7 +10,7 @@
 		},
 		{
 			"path": ".",
-			"name": "."
+			"name": "Root"
 		}
 	],
 	"settings": {
