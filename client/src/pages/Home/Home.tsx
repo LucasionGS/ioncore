@@ -1,11 +1,16 @@
-import logo from './assets/logo.svg';
-import './App.scss';
+import Link from "../../components/Router/Link";
+import logo from "../../assets/logo.svg";
 // import { MySharedInterface } from "@shared/shared"; // Shared code between Client and Server
 
-function App() {
+function HomePage() {
   return (
     <div className="App">
       <header className="App-header">
+        <div>
+          <h3>
+            <Link className="App-link" href="/login">Login</Link>
+          </h3>
+        </div>
         <img src={logo} className="App-logo" alt="logo" />
         <p>Ioncore React Template</p>
         <p>
@@ -24,4 +29,4 @@ function App() {
   );
 }
 
-export default App;
+export default HomePage;

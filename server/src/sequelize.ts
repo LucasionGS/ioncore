@@ -16,7 +16,7 @@ const sequelize = new Sequelize({
   logging: false,
 });
 
-interface UserAttributes {
+export interface UserAttributes {
   id: string;
   username: string;
   password: string;
@@ -57,6 +57,15 @@ export class User extends Model<UserAttributes> implements UserAttributes {
     username: string;
     password: string;
   }) {
+    // check if username is taken
+    if (await User.findOne({
+      where: {
+        username: data.username,
+      },
+    })) {
+      throw new Error("Username is already taken");
+    }
+    
     return User.create({
       username: data.username,
       password: await User.hashPassword(data.password),
@@ -71,12 +80,12 @@ export class User extends Model<UserAttributes> implements UserAttributes {
       where: {
         username: data.username,
       },
-    }).then((user) => {
+    }).then(async user => {
       if (!user) {
         return null;
       }
 
-      return user.comparePassword(data.password) ? user : null;
+      return await user.comparePassword(data.password) ? user : null;
     });
   }
 
@@ -124,7 +133,7 @@ User.init({
   sequelize,
 });
 
-interface RoleAttributes {
+export interface RoleAttributes {
   id: string;
   name: string;
   inherit?: string; // Role ID

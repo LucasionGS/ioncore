@@ -1,0 +1,1 @@
+export { type UserAttributes, type RoleAttributes } from "../server/src/sequelize";
