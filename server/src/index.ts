@@ -4,6 +4,7 @@ import { createProxyMiddleware } from "http-proxy-middleware";
 import fetch from "cross-fetch";
 import ApiController from "./controllers/ApiController";
 
+// import { MySharedInterface } from "@shared/shared"; // Shared code between Client and Server
 
 const app = express();
 const port = process.env.PORT || 3080;

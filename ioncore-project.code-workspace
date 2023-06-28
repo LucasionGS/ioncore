@@ -9,6 +9,10 @@
 			"name": "Server"
 		},
 		{
+			"path": "./shared",
+			"name": "Shared (Types only)"
+		},
+		{
 			"path": ".",
 			"name": "Root"
 		}

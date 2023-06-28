@@ -1,6 +1,6 @@
-import React from 'react';
 import logo from './assets/logo.svg';
 import './App.scss';
+// import { MySharedInterface } from "@shared/shared"; // Shared code between Client and Server
 
 function App() {
   return (
