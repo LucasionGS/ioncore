@@ -3,6 +3,7 @@ import logo from "../../assets/logo.svg";
 import { useCallback, useState } from "react";
 import UserApi from "../../Api/UserApi";
 import { useRouter } from "../../components/Router";
+import { Button } from "@ioncore/theme/Button";
 // import { MySharedInterface } from "@shared/shared"; // Shared code between Client and Server
 
 const inputStyle: React.CSSProperties = {
@@ -78,9 +79,12 @@ function LoginPage() {
             ) : null
           }
 
-          <button style={buttonStyle} type="submit">
+          <Button style={buttonStyle} type="submit">
             {registerMode ? "Register" : "Login"}
-          </button>
+          </Button>
+          {/* <button style={buttonStyle} type="submit">
+            {registerMode ? "Register" : "Login"}
+          </button> */}
           <p style={{ color: "red" }}>{error}</p>
           <a className="App-link" onClick={() => setRegisterMode(!registerMode)}>
             {registerMode ? "Already have a user? Login" : "Don't have a user? Register"}
