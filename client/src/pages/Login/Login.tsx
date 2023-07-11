@@ -4,6 +4,7 @@ import { useCallback, useState } from "react";
 import UserApi from "../../Api/UserApi";
 import { useRouter } from "../../components/Router";
 import { Button } from "@ioncore/theme/Button";
+import { Input } from "@ioncore/theme/Input/Input";
 // import { MySharedInterface } from "@shared/shared"; // Shared code between Client and Server
 
 const inputStyle: React.CSSProperties = {
@@ -71,11 +72,12 @@ function LoginPage() {
           <h3>
             Login
           </h3>
-          <input style={inputStyle} type="text" placeholder="Username" value={username} onChange={(e) => setUsername(e.target.value)} />
-          <input style={inputStyle} type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} />
+          <Input style={inputStyle} type="text" placeholder="Username" value={username} onChange={(e) => setUsername(e.target.value)} label="Username"/>
+          <br />
+          <Input style={inputStyle} type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} label="Password"/>
           {
             registerMode ? (
-              <input style={inputStyle} type="password" placeholder="Confirm Password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
+              <Input style={inputStyle} type="password" placeholder="Confirm Password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
             ) : null
           }
 
