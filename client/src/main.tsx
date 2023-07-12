@@ -2,6 +2,7 @@ import React from "react"
 import ReactDOM from "react-dom/client"
 import "./index.scss"
 import Router, { PageBuild } from "./components/Router"
+import { IoncoreProvider } from "@ioncore/theme"
 
 const pages: PageBuild[] = [
   {
@@ -24,6 +25,8 @@ const pages: PageBuild[] = [
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>
-    <Router pages={pages} />
+    <IoncoreProvider theme={{ scheme: "dark" }}>
+      <Router pages={pages} />
+    </IoncoreProvider>
   </React.StrictMode>,
 )
