@@ -3,21 +3,34 @@ import { RoleAttributes, UserAttributes } from "@shared/models"
 
 namespace BaseApi {
   const baseUrl = `${window.location.protocol}//${window.location.host}/api`;
-  let user: UserAttributes | null = null;
-  let token: string | null = null;
+  let user: UserAttributes | null = window.localStorage.getItem("user") ? JSON.parse(window.localStorage.getItem("user")!) : null;
+  let token: string | null = window.localStorage.getItem("user_token") || null;
   export function setUser(data: { user: UserAttributes, token: string } | null) {
     if (data) {
       user = data.user;
       token = data.token;
+      window.localStorage.setItem("user", JSON.stringify(user));
+      window.localStorage.setItem("user_token", token);
     } else {
       user = null;
       token = null;
+      window.localStorage.removeItem("user");
+      window.localStorage.removeItem("user_token");
     }
+  }
+
+  export function getUser() {
+    return user;
+  }
+
+  export function getToken() {
+    return token;
   }
 
   export function getHeaders() {
     return {
       "Content-Type": "application/json",
+      ...(token ? { "Authorization": `Bearer ${token}` } : {}),
     };
   }
 

@@ -5,8 +5,9 @@ import AppSystem from "./AppSystem";
 import { fstat } from "fs";
 import fs from "fs";
 import Path from "path";
+import { NextFunction, Request, Response } from "express";
 
-process.env.JWT_SECRET ||= "ioncorejsonwebtokensecret_" + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+process.env.JWT_SECRET ||= "ioncore_json_web_token_secret_please_change_me";
 if (!AppSystem.createDir(Path.dirname(AppSystem.getSqliteDatabasePath()))) {
   throw new Error("Failed to create database directory");
 }
@@ -70,6 +71,44 @@ export class User extends Model<UserAttributes> implements UserAttributes {
       username: data.username,
       password: await User.hashPassword(data.password),
     });
+  }
+
+  public static middleware(options?: {
+    required?: boolean;
+  }) {
+    options ??= {};
+    const required = options.required ?? true;
+    return async (req: Request, res: Response, next: NextFunction) => {
+      const token = req.headers.authorization?.split(" ")[1];
+      if (!token) {
+        if (required) {
+          res.status(401).json({
+            error: "Authentication required",
+          });
+        } else {
+          next();
+        }
+        return;
+      }
+
+      try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET) as any;
+        const user = await User.findByPk(decoded.id);
+        if (!user) {
+          throw new Error("User not found");
+        }
+        (req as any).user = user;
+        next();
+      } catch (e) {
+        res.status(401).json({
+          error: "Invalid token",
+        });
+      }
+    };
+  }
+
+  public static getAuthenticatedUser(req: Request) {
+    return ((req as any).user as User) || null;
   }
 
   public static async authenticateUser(data: {
