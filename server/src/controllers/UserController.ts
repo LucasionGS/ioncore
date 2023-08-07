@@ -27,7 +27,7 @@ namespace UserController {
       });
     }).catch((err) => {
       console.error(err);
-      return res.status(500).json({ message: "An internal server error occurred." });
+      return res.status(500).json({ message: err?.message || "An internal server error occurred." });
     });
   });
 
@@ -47,6 +47,14 @@ namespace UserController {
     }).catch((err) => {
       console.error(err);
       return res.status(500).json({ message: err?.message || "An internal server error occurred." });
+    });
+  });
+
+  // Get all roles for a user
+  router.get("/me", User.middleware({ required: true }), (req, res) => {
+    const user = User.getAuthenticatedUser(req);
+    return res.json({
+      user: user.toJSON(),
     });
   });
 

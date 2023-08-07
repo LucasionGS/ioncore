@@ -54,19 +54,37 @@ export class User extends Model<UserAttributes> implements UserAttributes {
     return User.comparePassword(password, this.password);
   }
 
+  /**
+   * Verifies that the username is valid. Throws an error if it is not.
+   * @param username Username to verify
+   */
+  private static verifyUsername(username: string) {
+    if (username.length < 3) {
+      throw new Error("Username must be at least 3 characters long");
+    }
+    if (username.length > 32) {
+      throw new Error("Username must be at most 32 characters long");
+    }
+    if (!/^[a-zA-Z0-9]+$/.test(username)) {
+      throw new Error("Username must only contain letters and numbers");
+    }
+  }
+
   public static async registerUser(data: {
     username: string;
     password: string;
   }) {
+    User.verifyUsername(data.username);
+    
     // check if username is taken
     if (await User.findOne({
       where: {
-        username: data.username,
+        username: { [Op.like]: data.username },
       },
     })) {
       throw new Error("Username is already taken");
     }
-    
+
     return User.create({
       username: data.username,
       password: await User.hashPassword(data.password),
@@ -115,9 +133,10 @@ export class User extends Model<UserAttributes> implements UserAttributes {
     username: string;
     password: string;
   }) {
+    User.verifyUsername(data.username);
     return User.findOne({
       where: {
-        username: data.username,
+        username: { [Op.like]: data.username },
       },
     }).then(async user => {
       if (!user) {
