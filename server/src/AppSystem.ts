@@ -3,7 +3,7 @@ import fs from "fs";
 import Path from "path";
 
 namespace AppSystem {
-  export const friendlyAppName = "Ioncore App";
+  export const friendlyAppName = "Ioncore Application";
   export const appName = "ioncore_app";
   export const debug = process.env.NODE_ENV === "development";
 

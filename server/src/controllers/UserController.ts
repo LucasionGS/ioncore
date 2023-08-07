@@ -8,7 +8,42 @@ namespace UserController {
     res.json({ message: "Hello from the API!" });
   });
 
-  // Login
+  /**
+   * @swagger
+   *  /api/user/login:
+   *  post:
+   *    tags: [User]
+   *    summary: Login
+   *    description: Login to the application
+   *    requestBody:
+   *      required: true
+   *      content:
+   *        application/json:
+   *          schema:
+   *            type: object
+   *            properties:
+   *              username:
+   *                type: string
+   *              password:
+   *                type: string
+   *    responses:
+   *      200:
+   *        description: OK
+   *        content:
+   *          application/json:
+   *            schema:
+   *              type: object
+   *              properties:
+   *                user:
+   *                  type: object
+   *                  properties:
+   *                    id:
+   *                      type: string
+   *                    username:
+   *                      type: string
+   *                token:
+   *                  type: string
+   */
   router.post("/login", (req, res) => {
     const { username, password } = req.body;
 
@@ -31,14 +66,49 @@ namespace UserController {
     });
   });
 
-  // Register
+  /**
+   * @swagger
+   *  /api/user/register:
+   *  post:
+   *    tags: [User]
+   *    summary: Register
+   *    description: Register a new user
+   *    requestBody:
+   *      required: true
+   *      content:
+   *        application/json:
+   *          schema:
+   *            type: object
+   *            properties:
+   *              username:
+   *                type: string
+   *              password:
+   *                type: string
+   *    responses:
+   *      200:
+   *        description: OK
+   *        content:
+   *          application/json:
+   *            schema:
+   *              type: object
+   *              properties:
+   *                user:
+   *                  type: object
+   *                  properties:
+   *                    id:
+   *                      type: string
+   *                    username:
+   *                      type: string
+   *                token:
+   *                  type: string
+   */
   router.post("/register", (req, res) => {
     const { username, password } = req.body;
 
     if (!username || !password) {
       return res.status(400).json({ message: "Username and password are required." });
     }
-    
+
     User.registerUser({ username, password }).then((user) => {
       return res.json({
         user: user.toJSON(),

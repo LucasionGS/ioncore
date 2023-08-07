@@ -17,13 +17,18 @@ const sequelize = new Sequelize({
   logging: false,
 });
 
+export interface UserAttributesCreation {
+  username: string;
+  password: string;
+}
+
 export interface UserAttributes {
   id: string;
   username: string;
   password: string;
 }
 
-export class User extends Model<UserAttributes> implements UserAttributes {
+export class User extends Model<UserAttributes, UserAttributesCreation> implements UserAttributes {
   public id!: string;
   public username!: string;
   public password!: string;
@@ -79,12 +84,14 @@ export class User extends Model<UserAttributes> implements UserAttributes {
     // check if username is taken
     if (await User.findOne({
       where: {
-        username: { [Op.like]: data.username },
+        username: {
+          [Op.like]: data.username
+        },
       },
     })) {
       throw new Error("Username is already taken");
     }
-
+    
     return User.create({
       username: data.username,
       password: await User.hashPassword(data.password),
@@ -110,7 +117,7 @@ export class User extends Model<UserAttributes> implements UserAttributes {
       }
 
       try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET) as any;
+        const decoded = jwt.verify(token, process.env.JWT_SECRET!) as any;
         const user = await User.findByPk(decoded.id);
         if (!user) {
           throw new Error("User not found");
@@ -136,7 +143,9 @@ export class User extends Model<UserAttributes> implements UserAttributes {
     User.verifyUsername(data.username);
     return User.findOne({
       where: {
-        username: { [Op.like]: data.username },
+        username: {
+          [Op.like]: data.username
+        }
       },
     }).then(async user => {
       if (!user) {
@@ -166,7 +175,7 @@ export class User extends Model<UserAttributes> implements UserAttributes {
     return jwt.sign({
       id: this.id,
       username: this.username,
-    }, process.env.JWT_SECRET, {
+    }, process.env.JWT_SECRET!, {
       expiresIn: "21d",
     });
   }
@@ -191,6 +200,12 @@ User.init({
   sequelize,
 });
 
+export interface RoleAttributesCreation {
+  name: string;
+  inherit?: string; // Role ID
+  permissions?: string; // List of permission keys. Example: DASHBOARD_VIEW, DASHBOARD_EDIT, etc.
+}
+
 export interface RoleAttributes {
   id: string;
   name: string;
@@ -200,11 +215,11 @@ export interface RoleAttributes {
 
 const uniqueList = (list: string[]) => [...new Set(list)].filter(Boolean);
 
-export class Role extends Model<RoleAttributes> implements RoleAttributes {
+export class Role extends Model<RoleAttributes, RoleAttributesCreation> implements RoleAttributes {
   public id!: string;
   public name!: string;
   public inherit!: string;
-  public permissions: string;
+  public permissions!: string;
 
   public setPermissionList = (permissions: string[]) => this.permissions = uniqueList(permissions).join(",");
   public getPermissionList = () => this.permissions.split(",");
@@ -233,7 +248,7 @@ export class Role extends Model<RoleAttributes> implements RoleAttributes {
     inheritById?: string;
     inheritByName?: string;
   }) {
-    let inherit: string = null;
+    let inherit: string | undefined;
     if (data.inheritByName) {
       inherit = (await Role.getRoleByName(data.inheritByName))?.id;
       if (!inherit) {

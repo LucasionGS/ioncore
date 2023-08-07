@@ -41,7 +41,9 @@
         "cwd": "${workspaceFolder}/server"
       },
       "problemMatcher": [],
-      "dependsOn": ["Install Server modules"],
+      "dependsOn": [
+        "Install Server modules"
+      ],
       "hide": true
     },
     {
@@ -53,22 +55,28 @@
         "cwd": "${workspaceFolder}/ui"
       },
       "problemMatcher": [],
-      "dependsOn": ["Install UI modules"],
+      "dependsOn": [
+        "Install UI modules"
+      ],
       "hide": true
     },
     {
       "type": "shell",
-      "label": "Build all",
-      "detail": "Build all",
-      "dependsOn": [
-        "Build UI",
-        "Build Server",
-      ],
+      "label": "Build Production",
+      "detail": "Build Production",
       "group": {
         "kind": "build",
         "isDefault": true
       },
-      "command": "rm -rf dist && mkdir -p dist && mv server/build dist/server && mv ui/dist dist/public && cp -r server/package.json dist/package.json && yarn install --production --cwd dist",
+      "windows": {
+        "command": "./build.bat"
+      },
+      "linux": {
+        "command": "./build.sh"
+      },
+      "osx": {
+        "command": "./build.sh"
+      },
       "options": {
         "cwd": "${workspaceFolder}"
       },
