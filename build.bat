@@ -5,15 +5,15 @@ SET CLIENT=client
 SET OUTPUT=dist
 
 REM Build client
-echo Compiling CLIENT...
+echo Compiling client...
 cd %CLIENT%
-call yarn install
+call yarn
 call yarn build
 
 REM Build server
 echo Compiling server...
 cd ..\%SERVER%
-call yarn install
+call yarn
 call yarn run build-server
 
 REM Combine
