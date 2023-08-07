@@ -3,6 +3,8 @@ import https from "https";
 import fs from "fs";
 import { createProxyMiddleware } from "http-proxy-middleware";
 import fetch from "cross-fetch";
+import ApiController from "./controllers/ApiController";
+
 import Path from "path";
 // import { MySharedInterface } from "@shared/shared"; // Shared code between Client and Server
 
@@ -31,6 +33,8 @@ if (redirectHTTPS) {
     }
   });
 }
+
+app.use("/api", express.json(), ApiController.router);
 
 if (process.env.NODE_ENV === "development") {
   // Proxy React from port 12463 to port {port} (ioncore-server)
