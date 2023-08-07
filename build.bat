@@ -4,17 +4,16 @@ SET SERVER=server
 SET CLIENT=client
 SET OUTPUT=dist
 
+call yarn install --cwd %SERVER%
+call yarn install --cwd %CLIENT%
+
 REM Build client
 echo Compiling client...
-cd %CLIENT%
-call yarn
-call yarn build
+cd "%CLIENT%" && call yarn build
 
 REM Build server
 echo Compiling server...
-cd ..\%SERVER%
-call yarn
-call yarn run build-server
+cd "../%SERVER%" && call yarn run build-server
 
 REM Combine
 echo Combining CLIENT and server...

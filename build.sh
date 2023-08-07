@@ -2,17 +2,16 @@ SERVER="server"
 CLIENT="client"
 OUTPUT="dist"
 
+yarn install --cwd "$SERVER"
+yarn install --cwd "$CLIENT"
+
 # Build client
 echo "Compiling client..."
-cd "$CLIENT"
-yarn
-yarn build
+cd "$CLIENT" && yarn build
 
 # Build server
 echo "Compiling server..."
-cd "../$SERVER"
-yarn
-yarn run build-server
+cd "../$SERVER" && yarn run build-server
 
 # Combine
 echo "Combining CLIENT and server..."
