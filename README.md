@@ -36,3 +36,25 @@ yarn dev
 ```
 
 This will start the server on port 3080 (default). The client is proxied to the server, so you can access it on [http://localhost:3080](http://localhost:3080).
+
+
+## HTTPS
+To enable HTTPS, you need to generate a certificate and passphrase. The certificate must be placed in the `server` directory and named `certificate.pfx`.  
+You can then set the `CERTIFICATE_PASSPHRASE` environment variable to the passphrase you generated.
+
+`certificate.pfx` is ignored by .gitignore, so it will not be committed to the repository. Remove it from .gitignore if you want to commit it.
+
+When building the project, the certificate will be copied to the `dist` directory.
+
+As of right now, enabling HTTPS will disable HMR (Hot Module Replacement) in the client.
+
+### Generating a Certificate
+#### Windows Powershell
+You can generate a self-signed certificate with a passphrase using the following command, *`assuming you are in the root directory of the project`*:
+```powershell
+$domain = "mydomain.com"
+$passphrase = "YourPassphrase"
+$cert = New-SelfSignedCertificate -DnsName $domain -CertStoreLocation cert:\LocalMachine\My
+$pwd = ConvertTo-SecureString -String $passphrase -Force -AsPlainText
+Export-PfxCertificate -Cert $cert -FilePath .\server\certificate.pfx -Password $pwd
+```

@@ -38,6 +38,14 @@ else
   echo "No .env file found. Using default values."
 fi
 
+# Copy certificate.pfx to certificate.pfx
+if [ -f "$SERVER/certificate.pfx" ]; then
+  echo "Copying $SERVER/certificate.pfx to certificate.pfx..."
+  cp "$SERVER/certificate.pfx" "$OUTPUT/certificate.pfx"
+else
+  echo "No certificate file found. HTTPS will be disabled."
+fi
+
 # Build finished
 REAL_OUTPUT=$(realpath "$OUTPUT")
 echo "Build finished. Output in $REAL_OUTPUT"

@@ -40,6 +40,14 @@ IF EXIST %SERVER%\.env-production (
   echo No .env file found. Using default values.
 )
 
+REM Copy certificate.pfx to certificate.pfx
+IF EXIST %SERVER%\certificate.pfx (
+  echo Copying %SERVER%\certificate.pfx to certificate.pfx...
+  copy %SERVER%\certificate.pfx %OUTPUT%\certificate.pfx
+) ELSE (
+  echo No certificate file found. HTTPS will be disabled.
+)
+
 REM Build finished
 echo Build finished. Output in %cd%\%OUTPUT%
 
