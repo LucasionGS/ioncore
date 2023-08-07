@@ -1,13 +1,39 @@
 import dotenv from "dotenv"; dotenv.config(); // Load .env file
 import express from "express";
+import https from "https";
+import fs from "fs";
 import { createProxyMiddleware } from "http-proxy-middleware";
 import fetch from "cross-fetch";
 import ApiController from "./controllers/ApiController";
 
+import Path from "path";
 // import { MySharedInterface } from "@shared/shared"; // Shared code between Client and Server
 
 const app = express();
-const port = process.env.PORT || 3080;
+const port = +(process.env.PORT || 3080);
+const portSSL = +(process.env.PORT_HTTPS || 3443);
+
+const certificatePath = process.env.CERTIFICATE_PATH || Path.resolve(__dirname, "../certificate.pfx");
+if (fs.existsSync(certificatePath)) {
+  const https_options: https.ServerOptions = {
+    pfx: fs.readFileSync(certificatePath),
+    passphrase: process.env.CERTIFICATE_PASSPHRASE
+  };
+  https.createServer(https_options, app).listen(portSSL);
+  console.log(`HTTPS server started at https://localhost:${portSSL}`);
+}
+
+const redirectHTTPS = (process.env.REDIRECT_HTTPS || "false").toLowerCase() === "true";
+if (redirectHTTPS) {
+  app.use((req, res, next) => {
+    if (req.secure) {
+      next();
+    }
+    else {
+      res.redirect(`https://${req.headers.host.split(":")[0]}:${portSSL}${req.url}`);
+    }
+  });
+}
 
 app.use("/api", express.json(), ApiController.router);
 
