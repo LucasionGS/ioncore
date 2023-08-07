@@ -3,15 +3,15 @@ CLIENT="client"
 OUTPUT="dist"
 
 # Build client
-echo "Compiling CLIENT..."
+echo "Compiling client..."
 cd "$CLIENT"
-yarn install
+yarn
 yarn build
 
 # Build server
 echo "Compiling server..."
 cd "../$SERVER"
-yarn install
+yarn
 yarn run build-server
 
 # Combine
