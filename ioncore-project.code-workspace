@@ -1,20 +1,20 @@
 {
 	"folders": [
 		{
-			"path": "./client",
-			"name": "Client"
+			"name": "Client",
+			"path": "client"
 		},
 		{
-			"path": "./server",
-			"name": "Server"
+			"name": "Server",
+			"path": "server"
 		},
 		{
-			"path": "./shared",
-			"name": "Shared (Types only)"
+			"name": "Shared (Types only)",
+			"path": "shared"
 		},
 		{
-			"path": ".",
-			"name": "Root"
+			"name": "Root",
+			"path": "."
 		}
 	],
 	"settings": {
