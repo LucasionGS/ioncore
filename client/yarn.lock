@@ -112,10 +112,10 @@
   resolved "https://registry.yarnpkg.com/@esbuild/win32-x64/-/win32-x64-0.17.19.tgz#8cfaf2ff603e9aabb910e9c0558c26cf32744061"
   integrity sha512-lAhycmKnVOuRYNtRtatQR1LPQf2oYCkRGkSFnseDAKPl8lu5SOsK/e1sXe5a0Pc5kHIHe6P2I/ilntNv2xf3cA==
 
-"@ioncore/theme@^1.0.6":
-  version "1.0.6"
-  resolved "https://registry.yarnpkg.com/@ioncore/theme/-/theme-1.0.6.tgz#3b933ee886ddba6904383ca0ad80627212bfeef4"
-  integrity sha512-jCLNm52zhd4ap0xNsIYRMGt+CNrAZlVh/s0aYtfwCmESiCptBO9ipIwi6cznD8LDGnxdyGAmdV5uQkxl4MGtuQ==
+"@ioncore/theme@^1.0.10":
+  version "1.0.10"
+  resolved "https://registry.yarnpkg.com/@ioncore/theme/-/theme-1.0.10.tgz#fa6c625dc89ca2327b9ed882eb76cc2b1c0c78dc"
+  integrity sha512-lsvdFd1Tszj7fA0ytB/vu4EBpW/ZGLLmu9OfRZij81lNDW72ic5LaAKjPJly+w6hp6FI5XW2+o6jPL3aSX7pgA==
   dependencies:
     react "^18.2.0"
 
