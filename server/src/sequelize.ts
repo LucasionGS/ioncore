@@ -6,6 +6,7 @@ import { fstat } from "fs";
 import fs from "fs";
 import Path from "path";
 import { NextFunction, Request, Response } from "express";
+import { ClientUser } from "@shared/models";
 
 process.env.JWT_SECRET ||= "ioncore_json_web_token_secret_please_change_me";
 if (!AppSystem.createDir(Path.dirname(AppSystem.getSqliteDatabasePath()))) {
@@ -98,7 +99,7 @@ export class User extends Model<UserAttributes, UserAttributesCreation> implemen
     });
   }
 
-  public static middleware(options?: {
+  public static $middleware(options?: {
     required?: boolean;
   }) {
     options ??= {};
@@ -117,12 +118,13 @@ export class User extends Model<UserAttributes, UserAttributesCreation> implemen
       }
 
       try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET!) as any;
-        const user = await User.findByPk(decoded.id);
+        const clientUser = jwt.verify(token, process.env.JWT_SECRET!) as ClientUser;
+        const user = await User.findByPk(clientUser.id);
         if (!user) {
           throw new Error("User not found");
         }
         (req as any).user = user;
+        (req as any).clientUser = clientUser;
         next();
       } catch (e) {
         res.status(401).json({
@@ -134,6 +136,10 @@ export class User extends Model<UserAttributes, UserAttributesCreation> implemen
 
   public static getAuthenticatedUser(req: Request) {
     return ((req as any).user as User) || null;
+  }
+
+  public static getClientUser(req: Request) {
+    return ((req as any).clientUser as ClientUser) || null;
   }
 
   public static async authenticateUser(data: {
@@ -170,13 +176,32 @@ export class User extends Model<UserAttributes, UserAttributesCreation> implemen
       roles: (await this.getRoles()).map(role => role.toJSON()),
     };
   }
-
-  public jwt() {
-    return jwt.sign({
+  public async toClientJSON(): Promise<ClientUser> {
+    const roles = (await this.getRoles()).map(role => role.name);
+    return {
       id: this.id,
       username: this.username,
-    }, process.env.JWT_SECRET!, {
+      roles: roles,
+      isAdmin: roles.some(role => role.toLowerCase() === "admin")
+    };
+  }
+
+  public async jwt() {
+    return jwt.sign(await this.toClientJSON(), process.env.JWT_SECRET!, {
       expiresIn: "21d",
+    });
+  }
+
+  public async addRole(role: string | Role) {
+    if (typeof role === "string") {
+      role = (await Role.getRoleByName(role))!;
+    }
+    if (!role) {
+      throw new Error("Role not found");
+    }
+    return UserRole.create({
+      userId: this.id,
+      roleId: role.id,
     });
   }
 }
@@ -316,13 +341,18 @@ Role.init({
   sequelize,
 });
 
+interface UserRoleAttributesCreation {
+  userId: string;
+  roleId: string;
+}
+
 interface UserRoleAttributes {
   id: string;
   userId: string;
   roleId: string;
 }
 
-export class UserRole extends Model<UserRoleAttributes> implements UserRoleAttributes {
+export class UserRole extends Model<UserRoleAttributes, UserRoleAttributesCreation> implements UserRoleAttributes {
   public id!: string;
   public userId!: string;
   public roleId!: string;

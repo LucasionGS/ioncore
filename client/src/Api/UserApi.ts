@@ -1,5 +1,5 @@
 import BaseApi from "./BaseApi";
-import { RoleAttributes, UserAttributes } from "@shared/models"
+import { RoleAttributes, ClientUser } from "@shared/models"
 
 namespace UserApi {
   export async function login(username: string, password: string) {
@@ -9,7 +9,7 @@ namespace UserApi {
       }
 
       return res.json() as Promise<{
-        user: UserAttributes;
+        user: ClientUser;
         token: string;
       }>;
     }).then(data => {
@@ -25,12 +25,31 @@ namespace UserApi {
       }
 
       return res.json() as Promise<{
-        user: UserAttributes;
+        user: ClientUser;
         token: string;
       }>;
     }).then(data => {
       BaseApi.setUser(data);
       return data;
+    });
+  }
+
+  /**
+   * Must be an admin to use this function.
+   * 
+   * Returns a list of users.
+   */
+  export async function getUsers() {
+    return BaseApi.GET("/user").then(async res => {
+      if (!res.ok) {
+        throw new Error((await res.json()).message || res.statusText);
+      }
+
+      return res.json() as Promise<{
+        users: ClientUser[];
+      }>;
+    }).then(data => {
+      return data.users;
     });
   }
 }

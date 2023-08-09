@@ -1,11 +1,22 @@
 import { Router } from "express";
-import { User } from "../sequelize";
+import { Role, User } from "../sequelize";
 
 namespace UserController {
   export const router = Router();
 
-  router.get("/", (req, res) => {
-    res.json({ message: "Hello from the API!" });
+  router.get("/", User.$middleware({ required: true }), async (req, res) => {
+    const user = User.getClientUser(req);
+    
+    if (user.isAdmin) {
+      return res.json({
+        users: await Promise.all((await User.findAll()).map(user => user.toClientJSON())),
+      });
+    }
+    else {
+      return res.json({
+        users: []
+      });
+    }
   });
 
   /**
@@ -51,14 +62,14 @@ namespace UserController {
       return res.status(400).json({ message: "Username and password are required." });
     }
 
-    User.authenticateUser({ username, password }).then((user) => {
+    User.authenticateUser({ username, password }).then(async (user) => {
       if (!user) {
         return res.status(401).json({ message: "Invalid username or password." });
       }
 
       return res.json({
-        user: user.toJSON(),
-        token: user.jwt()
+        user: await user.toClientJSON(),
+        token: await user.jwt()
       });
     }).catch((err) => {
       console.error(err);
@@ -102,33 +113,42 @@ namespace UserController {
    *                token:
    *                  type: string
    */
-  router.post("/register", (req, res) => {
+  router.post("/register", async (req, res) => {
     const { username, password } = req.body;
 
     if (!username || !password) {
       return res.status(400).json({ message: "Username and password are required." });
     }
 
-    User.registerUser({ username, password }).then((user) => {
+    let giveAdmin = false;
+    if (!hasFirstUser) {
+      hasFirstUser = !!(await User.findOne());
+      giveAdmin = !hasFirstUser;
+    }
+
+    User.registerUser({ username, password }).then(async (user) => {
+      if (giveAdmin) {
+        await user.addRole("admin");
+        console.log("Gave admin role to first user.");
+      }
       return res.json({
-        user: user.toJSON(),
-        token: user.jwt()
+        user: await user.toClientJSON(),
+        token: await user.jwt()
       });
     }).catch((err) => {
       console.error(err);
       return res.status(500).json({ message: err?.message || "An internal server error occurred." });
     });
   });
+  let hasFirstUser = false;
 
-  // Get all roles for a user
-  router.get("/me", User.middleware({ required: true }), (req, res) => {
+  router.get("/me", User.$middleware({ required: true }), async (req, res) => {
     const user = User.getAuthenticatedUser(req);
     return res.json({
-      user: user.toJSON(),
+      user: await user.toClientJSON(),
     });
   });
 
-  // Get all roles for a user
   router.get("/:id", (req, res) => {
     const { id } = req.params;
 
@@ -138,7 +158,7 @@ namespace UserController {
       }
 
       return res.json({
-        user: user.toJSON(),
+        user: user.toClientJSON(),
       });
     }).catch((err) => {
       console.error(err);

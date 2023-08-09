@@ -1,10 +1,11 @@
-import Link from "../../components/Router/Link";
+import { Link } from "@ioncore/theme/Link";
 import logo from "../../assets/logo.svg";
 import { useCallback, useState } from "react";
 import UserApi from "../../Api/UserApi";
-import { useRouter } from "../../components/Router";
+import { useRouter } from "@ioncore/theme/hooks/useRouter";
 import { Button } from "@ioncore/theme/Button";
 import { Input } from "@ioncore/theme/Input/Input";
+import "./Login.scss";
 // import { MySharedInterface } from "@shared/shared"; // Shared code between Client and Server
 
 const inputStyle: React.CSSProperties = {

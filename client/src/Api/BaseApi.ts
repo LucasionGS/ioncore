@@ -1,11 +1,11 @@
-import { RoleAttributes, UserAttributes } from "@shared/models"
+import { ClientUser, RoleAttributes, UserAttributes } from "@shared/models"
 
 
 namespace BaseApi {
   const baseUrl = `${window.location.protocol}//${window.location.host}/api`;
-  let user: UserAttributes | null = window.localStorage.getItem("user") ? JSON.parse(window.localStorage.getItem("user")!) : null;
+  let user: ClientUser | null = window.localStorage.getItem("user") ? JSON.parse(window.localStorage.getItem("user")!) : null;
   let token: string | null = window.localStorage.getItem("user_token") || null;
-  export function setUser(data: { user: UserAttributes, token: string } | null) {
+  export function setUser(data: { user: ClientUser, token: string } | null) {
     if (data) {
       user = data.user;
       token = data.token;
@@ -46,7 +46,7 @@ namespace BaseApi {
     return await window.fetch(`${baseUrl}/${path}`, {
       ...(init || {}),
       headers: {
-        "Content-Type": "application/json",
+        ...getHeaders(),
         ...(init?.headers || {}),
       },
       credentials: "include",

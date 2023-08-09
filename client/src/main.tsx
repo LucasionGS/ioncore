@@ -1,14 +1,14 @@
 import React from "react"
 import ReactDOM from "react-dom/client"
 import "./index.scss"
-import Router, { PageBuild } from "./components/Router"
+import { Router, Route } from "@ioncore/theme/Router"
 import { IoncoreProvider } from "@ioncore/theme"
 
-const pages: PageBuild[] = [
+const pages: Route[] = [
   {
     path: /^\/$/,
     title: "Home",
-    content: async () => {
+    component: async () => {
       const HomePage = (await import("./pages/Home/Home")).default;
       return <HomePage />
     },
@@ -16,9 +16,17 @@ const pages: PageBuild[] = [
   {
     path: /^\/login$/,
     title: "Login",
-    content: async () => {
+    component: async () => {
       const LoginPage = (await import("./pages/Login/Login")).default;
       return <LoginPage />
+    },
+  },
+  {
+    path: /^\/admin(\/|$)/,
+    title: "Admin",
+    component: async () => {
+      const AdminPage = (await import("./pages/Admin/Admin")).default;
+      return <AdminPage />
     },
   },
 ]
