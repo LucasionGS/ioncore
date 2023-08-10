@@ -1,10 +1,12 @@
 import { Router } from "express";
 import { Role, User } from "../sequelize";
+import { ClientUser, RoleAttributes, RoleAttributesObject } from "@shared/models";
+import AppSystem from "../AppSystem";
 
 namespace UserController {
   export const router = Router();
 
-  router.get("/", User.$middleware({ required: true }), async (req, res) => {
+  router.get("/", User.$middleware({ required: true }), AppSystem.uploader.single("profile_picture") as any, async (req, res) => {
     const user = User.getClientUser(req);
     
     if (user.isAdmin) {
@@ -131,6 +133,9 @@ namespace UserController {
         await user.addRole("admin");
         console.log("Gave admin role to first user.");
       }
+      else {
+        await user.addRole("user");
+      }
       return res.json({
         user: await user.toClientJSON(),
         token: await user.jwt()
@@ -142,10 +147,52 @@ namespace UserController {
   });
   let hasFirstUser = false;
 
+  router.post("/avatar", User.$middleware({ required: true }), async (req, res) => {
+    const user = User.getClientUser(req);
+  });
+
   router.get("/me", User.$middleware({ required: true }), async (req, res) => {
     const user = User.getAuthenticatedUser(req);
     return res.json({
       user: await user.toClientJSON(),
+      token: await user.jwt()
+    });
+  });
+
+  router.get("/roles", User.$middleware({ required: true }), async (req, res) => {
+    const user = User.getClientUser(req);
+    if (!user.isAdmin) {
+      return res.status(403).json({ message: "You do not have permission to view roles." });
+    }
+
+    return res.json({
+      roles: (await Role.findAll()).map(role => role.toJSON()),
+    });
+  });
+
+  router.put("/roles/:id", User.$middleware({ required: true }), async (req, res) => {
+    const { id } = req.params;
+    const roleData = req.body as Partial<RoleAttributesObject>;
+    delete roleData.id; // Prevents changing the ID
+    const user = User.getClientUser(req);
+    if (!user.isAdmin) {
+      return res.status(403).json({ message: "You do not have permission to edit roles." });
+    }
+
+    const role = await Role.findByPk(id);
+    if (!role) {
+      return res.status(404).json({ message: "Role not found." });
+    }
+
+    const attr: Partial<RoleAttributes> = {
+      ...roleData,
+      permissions: roleData.permissions?.join(",") ?? undefined,
+    }
+    
+    await role.update(attr);
+
+    return res.json({
+      role: role.toJSON(),
     });
   });
 
@@ -159,6 +206,44 @@ namespace UserController {
 
       return res.json({
         user: user.toClientJSON(),
+      });
+    }).catch((err) => {
+      console.error(err);
+      return res.status(500).json({ message: "An internal server error occurred." });
+    });
+  });
+
+  router.put("/:id", User.$middleware({ required: true }), (req, res) => {
+    const { id } = req.params;
+    const clientUser = User.getClientUser(req);
+    const canEdit = clientUser.isAdmin || clientUser.id === id;
+
+    if (!canEdit) {
+      return res.status(403).json({ message: "You do not have permission to edit this user." });
+    }
+
+    User.findByPk(id).then(async (user) => {
+      if (!user) {
+        return res.status(404).json({ message: "User not found." });
+      }
+
+      const { username, roles } = req.body as ClientUser;
+
+      if (username) {
+        user.username = username;
+      }
+
+      if (roles) {
+        await user.updateRoles(roles);
+      }
+
+      user.save().then(() => {
+        return res.json({
+          user: user.toClientJSON(),
+        });
+      }).catch((err) => {
+        console.error(err);
+        return res.status(500).json({ message: "An internal server error occurred." });
       });
     }).catch((err) => {
       console.error(err);

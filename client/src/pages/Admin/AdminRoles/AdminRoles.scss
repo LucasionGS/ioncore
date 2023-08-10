@@ -1,0 +1,24 @@
+.admin-styled-table {
+  table-layout: fixed;
+  width: 100%;
+  border-collapse: collapse;
+
+  td {
+    border: 1px solid #ccc;
+    padding: 8px;
+  }
+
+  // Color every other row
+  tr:nth-child(even) {
+    background-color: #2b2b2b;
+  }
+
+  tr:hover {
+    td {
+      background-color: #61dafb48;
+    }
+    td:last-child {
+      background-color: transparent;
+    }
+  }
+}

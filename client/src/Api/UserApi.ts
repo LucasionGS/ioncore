@@ -1,5 +1,6 @@
+import React from "react";
 import BaseApi from "./BaseApi";
-import { RoleAttributes, ClientUser } from "@shared/models"
+import { RoleAttributes, ClientUser, RoleAttributesObject } from "@shared/models"
 
 namespace UserApi {
   export async function login(username: string, password: string) {
@@ -35,9 +36,9 @@ namespace UserApi {
   }
 
   /**
-   * Must be an admin to use this function.
    * 
    * Returns a list of users.
+   * @admin
    */
   export async function getUsers() {
     return BaseApi.GET("/user").then(async res => {
@@ -51,6 +52,72 @@ namespace UserApi {
     }).then(data => {
       return data.users;
     });
+  }
+
+  /**
+   * @admin
+   */
+  export async function updateUser(user: ClientUser) {
+    return BaseApi.PUT("/user/" + user.id, null, user).then(async res => {
+      if (!res.ok) {
+        throw new Error((await res.json()).message || res.statusText);
+      }
+
+      return res.json() as Promise<{
+        user: ClientUser;
+      }>;
+    }).then(data => {
+      return data.user;
+    });
+  }
+
+  /**
+   * @admin
+   */
+  export async function updateRole(role: RoleAttributesObject) {
+    return BaseApi.PUT("/user/roles/" + role.id, null, role).then(async res => {
+      if (!res.ok) {
+        throw new Error((await res.json()).message || res.statusText);
+      }
+
+      return res.json() as Promise<{
+        role: RoleAttributesObject;
+      }>;
+    }).then(data => {
+      return data.role;
+    });
+  }
+
+  /**
+   * Get a list of available roles.
+   * @admin
+   */
+  export async function getAvailableRoles() {
+    return BaseApi.GET("/user/roles").then(async res => {
+      if (!res.ok) {
+        throw new Error((await res.json()).message || res.statusText);
+      }
+
+      return res.json() as Promise<{
+        roles: RoleAttributesObject[];
+      }>;
+    }).then(data => {
+      return data.roles;
+    });
+  }
+
+  /**
+   * React hook for getting a list of available roles.
+   * @admin
+   */
+  export function useRoles() {
+    const [roles, setRoles] = React.useState<RoleAttributesObject[] | null>(null);
+
+    React.useEffect(() => {
+      getAvailableRoles().then(setRoles);
+    });
+
+    return roles;
   }
 }
 

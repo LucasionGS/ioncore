@@ -1,6 +1,7 @@
 import os from "os";
 import fs from "fs";
 import Path from "path";
+import multer from "multer";
 
 namespace AppSystem {
   export const friendlyAppName = "Ioncore Application";
@@ -55,9 +56,22 @@ namespace AppSystem {
     if (isWindows) {
       return Path.join(home, "AppData", "Local", appName);
     } else {
-      return Path.join(home, ".icconfig", "userdata", appName);
+      return Path.join(home, ".icconfig", "appdata", appName);
     }
   }
+
+  const appDir = AppSystem.getUserDataDirectory();
+  export const folders = {
+    uploadFolder: Path.resolve(appDir, "_temp"),
+    avatarFolder: Path.resolve(appDir, "avatars"),
+  }
+
+  export const uploader = multer({
+    dest: AppSystem.folders.uploadFolder,
+    limits: {
+      fileSize: 1024 * 1024 * 10, // 10 MB
+    },
+  });
 }
 
 export default AppSystem;

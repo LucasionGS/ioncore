@@ -10,12 +10,20 @@ function HomePage() {
     <div style={{ textAlign: "center" }}>
       <div>
         <p>Ioncore React Template</p>
-        {user && (
-          <h3>{user.username}</h3>
+        {user ? (
+          <>
+            <h3>{user.username}</h3>
+            {user.isAdmin && (
+              <h4>
+                <a href="/admin">Admin Dashboard</a>
+              </h4>
+            )}
+          </>
+        ) : (
+          <h4>
+            <Link href="/login">Login</Link>
+          </h4>
         )}
-        <h4>
-          <Link className="App-link" href="/login">Login</Link>
-        </h4>
       </div>
       <img src={logo} className="App-logo" alt="logo" />
       <p>

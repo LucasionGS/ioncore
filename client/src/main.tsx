@@ -3,7 +3,7 @@ import ReactDOM from "react-dom/client"
 import "./index.scss"
 import { Router, Route } from "@ioncore/theme/Router"
 import { IoncoreProvider } from "@ioncore/theme"
-
+import IoncoreLoader from "./components/IoncoreLoader/IoncoreLoader"
 const pages: Route[] = [
   {
     path: /^\/$/,
@@ -34,7 +34,8 @@ const pages: Route[] = [
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>
     <IoncoreProvider theme={{ scheme: "dark" }}>
-      <Router pages={pages} />
+      <Router pages={pages} loadingPage={() => <IoncoreLoader centered />} />
     </IoncoreProvider>
   </React.StrictMode>,
-)
+);
+

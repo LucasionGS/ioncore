@@ -3,7 +3,8 @@ import { ClientUser, RoleAttributes, UserAttributes } from "@shared/models"
 
 namespace BaseApi {
   const baseUrl = `${window.location.protocol}//${window.location.host}/api`;
-  let user: ClientUser | null = window.localStorage.getItem("user") ? JSON.parse(window.localStorage.getItem("user")!) : null;
+  const __user = window.localStorage.getItem("user");
+  let user: ClientUser | null = __user ? JSON.parse(__user) : null;
   let token: string | null = window.localStorage.getItem("user_token") || null;
   export function setUser(data: { user: ClientUser, token: string } | null) {
     if (data) {
@@ -99,6 +100,70 @@ namespace BaseApi {
       body: (formData ? formData : init?.body),
     });
   }
+
+  const isDeepEqual = (object1: Record<any, any>, object2: Record<any, any>) => {
+
+    const objKeys1 = Object.keys(object1);
+    const objKeys2 = Object.keys(object2);
+
+    if (objKeys1.length !== objKeys2.length) return false;
+
+    for (var key of objKeys1) {
+      const value1 = object1[key];
+      const value2 = object2[key];
+
+      const isObjects = isObject(value1) && isObject(value2);
+
+      if ((isObjects && !isDeepEqual(value1, value2)) ||
+        (!isObjects && value1 !== value2)
+      ) {
+        return false;
+      }
+    }
+    return true;
+  };
+
+  const isObject = (object: any) => {
+    return object != null && typeof object === "object";
+  };
+
+  // Refresh the user data
+  export async function refreshUser() {
+    if (!user) {
+      return;
+    }
+    const res = await GET("/user/me");
+    if (res.ok) {
+      const { user: newUser, token } = await res.json();
+
+      const oldImportant = {
+        id: user.id,
+        username: user.username,
+        isAdmin: user.isAdmin,
+        roles: user.roles,
+      }
+      const newImportant = {
+        id: newUser.id,
+        username: newUser.username,
+        isAdmin: newUser.isAdmin,
+        roles: newUser.roles,
+      }
+
+      // Check if the user has changed, if not, don't update
+      if (isDeepEqual(oldImportant, newImportant)) return;
+
+      setUser({
+        user: newUser,
+        token
+      });
+      // Refresh the page
+      window.location.reload();
+    } else {
+      setUser(null);
+    }
+  }
+
+  refreshUser();
 }
 
 export default BaseApi;

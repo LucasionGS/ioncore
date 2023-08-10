@@ -21,18 +21,21 @@ const sequelize = new Sequelize({
 export interface UserAttributesCreation {
   username: string;
   password: string;
+  profilePicture?: string;
 }
 
 export interface UserAttributes {
   id: string;
   username: string;
   password: string;
+  profilePicture: string;
 }
 
 export class User extends Model<UserAttributes, UserAttributesCreation> implements UserAttributes {
   public id!: string;
   public username!: string;
   public password!: string;
+  public profilePicture!: string;
 
   public async getRoles() {
     return Role.findAll({
@@ -181,6 +184,7 @@ export class User extends Model<UserAttributes, UserAttributesCreation> implemen
     return {
       id: this.id,
       username: this.username,
+      profilePicture: this.profilePicture,
       roles: roles,
       isAdmin: roles.some(role => role.toLowerCase() === "admin")
     };
@@ -204,6 +208,16 @@ export class User extends Model<UserAttributes, UserAttributesCreation> implemen
       roleId: role.id,
     });
   }
+
+  public async updateRoles(roles: string[]) {
+    return UserRole.destroy({
+      where: {
+        userId: this.id,
+      },
+    }).then(() => {
+      return Promise.all(roles.map(role => this.addRole(role)));
+    });
+  }
 }
 
 User.init({
@@ -221,6 +235,11 @@ User.init({
     type: DataTypes.STRING,
     allowNull: false,
   },
+  profilePicture: {
+    type: DataTypes.STRING,
+    allowNull: true,
+    defaultValue: null,
+  },
 }, {
   sequelize,
 });
@@ -236,6 +255,13 @@ export interface RoleAttributes {
   name: string;
   inherit?: string; // Role ID
   permissions: string; // List of permission keys. Example: DASHBOARD_VIEW, DASHBOARD_EDIT, etc.
+}
+
+export interface RoleAttributesObject {
+  id: string;
+  name: string;
+  inherit?: string; // Role ID
+  permissions: string[]; // List of permission keys. Example: DASHBOARD_VIEW, DASHBOARD_EDIT, etc.
 }
 
 const uniqueList = (list: string[]) => [...new Set(list)].filter(Boolean);

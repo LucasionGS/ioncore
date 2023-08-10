@@ -2,9 +2,11 @@ import { Link } from "@ioncore/theme/Link";
 import { Router, Routes } from "@ioncore/theme/Router";
 import logo from "../../assets/logo.svg";
 import BaseApi from "../../Api/BaseApi";
-import { Button } from "@ioncore/theme";
+import { Button, Paper } from "@ioncore/theme";
 import { IconArrowBack, IconHome, IconUsers } from "@tabler/icons-react";
 import "./Admin.scss";
+import IoncoreLoader from "../../components/IoncoreLoader/IoncoreLoader";
+import { IconAccessible } from "@tabler/icons-react";
 // import { MySharedInterface } from "@shared/shared"; // Shared code between Client and Server
 
 const subRouterPages: Routes = [
@@ -24,13 +26,24 @@ const subRouterPages: Routes = [
       return <AdminUsersPage />
     }
   },
+  {
+    title: "Admin | Roles",
+    path: /^\/admin\/roles$/,
+    component: async () => {
+      const AdminRolesPage = (await import("./AdminRoles/AdminRoles")).default;
+      return <AdminRolesPage />
+    }
+  },
 ];
 
 function AdminPage() {
   const user = BaseApi.getUser();
   if (!user?.isAdmin) {
     return (
-      <h2>Not Authorized</h2>
+      <Paper>
+        <h2>Not Authorized</h2>
+        <a href="/">Back to Web</a>
+      </Paper>
     );
   }
   return (
@@ -39,9 +52,10 @@ function AdminPage() {
         <SidebarLink icon={<IconArrowBack />} href="/">Back To Web</SidebarLink>
         <SidebarLink icon={<IconHome />} href="/admin">Home</SidebarLink>
         <SidebarLink icon={<IconUsers />} href="/admin/users">Users</SidebarLink>
+        <SidebarLink icon={<IconAccessible />} href="/admin/roles">Roles</SidebarLink>
       </div>
       <div className="admin-content">
-        <Router pages={subRouterPages} />
+        <Router pages={subRouterPages} loadingPage={() => <IoncoreLoader centered />} />
       </div>
     </div>
   );
