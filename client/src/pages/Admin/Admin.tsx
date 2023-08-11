@@ -37,15 +37,7 @@ const subRouterPages: Routes = [
 ];
 
 function AdminPage() {
-  const user = BaseApi.getUser();
-  if (!user?.isAdmin) {
-    return (
-      <Paper>
-        <h2>Not Authorized</h2>
-        <a href="/">Back to Web</a>
-      </Paper>
-    );
-  }
+  // const user = BaseApi.getUser();
   return (
     <div className="admin-page">
       <div className="admin-sidebar">

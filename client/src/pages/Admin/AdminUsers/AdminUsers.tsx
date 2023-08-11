@@ -8,7 +8,7 @@ import './AdminUsers.scss'
 
 export default function AdminUsers() {
   const users = useUsers();
-  const roles = UserApi.useRoles();
+  const roles = UserApi.useAvailableRoles();
   const [_updateI, _update] = React.useState(0);
   const forceUpdate = () => _update(_updateI + 1);
   

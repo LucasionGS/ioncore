@@ -102,18 +102,51 @@ export class User extends Model<UserAttributes, UserAttributesCreation> implemen
     });
   }
 
+  /**
+   *  Checks if the user has a permission.
+   * 
+   * If the user is an admin, this will always return true.
+   * @param permission Permission key to check
+   * @returns 
+   */
+  public async hasPermission(permission: string) {
+    const roles = await this.getRoles();
+    const isAdmin = roles.some(role => role.name.toLowerCase() === "admin");
+    if (isAdmin) {
+      return true;
+    }
+    for (const role of roles) {
+      if (await role.hasPermissionInherit(permission)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   public static $middleware(options?: {
+    /**
+     * Whether or not authentication is required. Defaults to true.
+     */
     required?: boolean;
+    /**
+     * Whether or not the user must be an admin. Defaults to false.  
+     * If true, the `required` option is automatically set to true.
+     */
+    admin?: boolean;
   }) {
     options ??= {};
-    const required = options.required ?? true;
+    const { required = true, admin = false } = options;
     return async (req: Request, res: Response, next: NextFunction) => {
       const token = req.headers.authorization?.split(" ")[1];
       if (!token) {
-        if (required) {
+        if (required || admin) {
           res.status(401).json({
             error: "Authentication required",
           });
+
+          if (admin) {
+            console.warn("Admin authentication required");
+          }
         } else {
           next();
         }
@@ -264,7 +297,7 @@ export interface RoleAttributesObject {
   permissions: string[]; // List of permission keys. Example: DASHBOARD_VIEW, DASHBOARD_EDIT, etc.
 }
 
-const uniqueList = (list: string[]) => [...new Set(list)].filter(Boolean);
+export const uniqueList = (list: string[]) => [...new Set(list)].filter(Boolean);
 
 export class Role extends Model<RoleAttributes, RoleAttributesCreation> implements RoleAttributes {
   public id!: string;
@@ -273,10 +306,11 @@ export class Role extends Model<RoleAttributes, RoleAttributesCreation> implemen
   public permissions!: string;
 
   public setPermissionList = (permissions: string[]) => this.permissions = uniqueList(permissions).join(",");
-  public getPermissionList = () => this.permissions.split(",");
+  public getPermissionList = () => this.permissions.split(",").filter(Boolean);
   public addPermission = (permission: string) => this.setPermissionList(uniqueList([...this.getPermissionList(), permission]));
   public removePermission = (permission: string) => this.setPermissionList(this.getPermissionList().filter(p => p !== permission));
   public hasPermission = (permission: string) => this.getPermissionList().includes(permission);
+  public hasPermissionInherit = async (permission: string) => (await this.getFullPermissionList()).includes(permission);
 
   /**
    * Returns an array of permissions including inherited permissions.

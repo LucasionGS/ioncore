@@ -7,7 +7,7 @@ import "./Home.scss";
 function HomePage() {
   const user = BaseApi.getUser();
   return (
-    <div style={{ textAlign: "center" }}>
+    <div className="home-page" style={{ textAlign: "center" }}>
       <div>
         <p>Ioncore React Template</p>
         {user ? (

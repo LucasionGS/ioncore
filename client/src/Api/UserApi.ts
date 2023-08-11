@@ -110,14 +110,76 @@ namespace UserApi {
    * React hook for getting a list of available roles.
    * @admin
    */
-  export function useRoles() {
+  export function useAvailableRoles() {
     const [roles, setRoles] = React.useState<RoleAttributesObject[] | null>(null);
 
     React.useEffect(() => {
       getAvailableRoles().then(setRoles);
-    });
+    }, []);
 
     return roles;
+  }
+
+  /**
+   * Get a list of a user's roles.
+   * 
+   * If no id is provided, it will return the current user's roles.
+   */
+  export async function getUserRoles(id: string = "me") {
+    return BaseApi.GET(`/user/${id}/roles`).then(async res => {
+      if (!res.ok) {
+        throw new Error((await res.json()).message || res.statusText);
+      }
+
+      return res.json() as Promise<{
+        roles: RoleAttributesObject[];
+      }>;
+    }).then(data => {
+      return data.roles;
+    });
+  }
+
+  /**
+   * Get a list of a user's permissions based on their roles.
+   * 
+   * If no id is provided, it will return the current user's permissions.
+   */
+  export async function getUserPermissions(id: string = "me") {
+    return BaseApi.GET(`/user/${id}/permissions`).then(async res => {
+      if (!res.ok) {
+        throw new Error((await res.json()).message || res.statusText);
+      }
+
+      return res.json() as Promise<{
+        permissions: string[];
+      }>;
+    }).then(data => {
+      return data.permissions;
+    });
+  }
+
+  /**
+   * Check if the current user has a specific role by name.
+   */
+  export async function hasRole(role: RoleAttributes | RoleAttributesObject | string) {
+    if (typeof role === "object") {
+      role = role.name;
+    }
+    const roles = await getUserRoles();
+    console.log(roles);
+    
+    return roles.some(r => r.name === role);
+  }
+
+  /**
+   * Check if the current user has a specific role.
+   */
+  export async function hasPermission(permission: string) {
+    if (await hasRole("admin")) return true;
+    const perms = await getUserPermissions();
+    console.log(perms);
+    
+    return perms.some(r => r.toUpperCase() === permission.toUpperCase());
   }
 }
 

@@ -44,6 +44,9 @@ namespace BaseApi {
    * @returns 
    */
   export async function fetch(path: string, init: RequestInit | null = {}): Promise<Response> {
+    while (path.startsWith("/")) {
+      path = path.slice(1);
+    }
     return await window.fetch(`${baseUrl}/${path}`, {
       ...(init || {}),
       headers: {

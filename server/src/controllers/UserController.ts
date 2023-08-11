@@ -1,5 +1,5 @@
-import { Router } from "express";
-import { Role, User } from "../sequelize";
+import { Request, Router } from "express";
+import { Role, User, uniqueList } from "../sequelize";
 import { ClientUser, RoleAttributes, RoleAttributesObject } from "@shared/models";
 import AppSystem from "../AppSystem";
 
@@ -8,7 +8,7 @@ namespace UserController {
 
   router.get("/", User.$middleware({ required: true }), AppSystem.uploader.single("profile_picture") as any, async (req, res) => {
     const user = User.getClientUser(req);
-    
+
     if (user.isAdmin) {
       return res.json({
         users: await Promise.all((await User.findAll()).map(user => user.toClientJSON())),
@@ -151,17 +151,14 @@ namespace UserController {
     const user = User.getClientUser(req);
   });
 
-  router.get("/me", User.$middleware({ required: true }), async (req, res) => {
-    const user = User.getAuthenticatedUser(req);
-    return res.json({
-      user: await user.toClientJSON(),
-      token: await user.jwt()
-    });
-  });
-
   router.get("/roles", User.$middleware({ required: true }), async (req, res) => {
-    const user = User.getClientUser(req);
-    if (!user.isAdmin) {
+    const clientUser = User.getClientUser(req);
+    const user = User.getAuthenticatedUser(req);
+
+    if (!(
+      clientUser.isAdmin
+      || await user.hasPermission("ROLES_VIEW")
+    )) {
       return res.status(403).json({ message: "You do not have permission to view roles." });
     }
 
@@ -174,8 +171,13 @@ namespace UserController {
     const { id } = req.params;
     const roleData = req.body as Partial<RoleAttributesObject>;
     delete roleData.id; // Prevents changing the ID
-    const user = User.getClientUser(req);
-    if (!user.isAdmin) {
+    const clientUser = User.getClientUser(req);
+    const user = User.getAuthenticatedUser(req);
+
+    if (!(
+      clientUser.isAdmin
+      || await user.hasPermission("ROLES_EDIT")
+    )) {
       return res.status(403).json({ message: "You do not have permission to edit roles." });
     }
 
@@ -188,7 +190,7 @@ namespace UserController {
       ...roleData,
       permissions: roleData.permissions?.join(",") ?? undefined,
     }
-    
+
     await role.update(attr);
 
     return res.json({
@@ -196,16 +198,24 @@ namespace UserController {
     });
   });
 
-  router.get("/:id", (req, res) => {
+  router.get("/:id", User.$middleware({ required: false }), (req, res) => {
     const { id } = req.params;
+    const userP = Promise.resolve(getMeOrId(req, id));
 
-    User.findByPk(id).then((user) => {
+    userP.then(async (user) => {
       if (!user) {
         return res.status(404).json({ message: "User not found." });
       }
 
+      if (id === "me") {
+        return res.json({
+          user: await user.toClientJSON(),
+          token: await user.jwt()
+        });
+      }
+
       return res.json({
-        user: user.toClientJSON(),
+        user: await user.toClientJSON(),
       });
     }).catch((err) => {
       console.error(err);
@@ -252,10 +262,11 @@ namespace UserController {
   });
 
   // Get all roles for a user
-  router.get("/:id/roles", (req, res) => {
-    const { id } = req.params;
+  router.get("/:id/roles", User.$middleware({ required: false }), async (req, res) => {
+    let { id } = req.params;
+    let user: Promise<User | null> = getMeOrId(req, id);
 
-    User.findByPk(id).then((user) => {
+    user.then((user) => {
       if (!user) {
         return res.status(404).json({ message: "User not found." });
       }
@@ -270,6 +281,42 @@ namespace UserController {
       return res.status(500).json({ message: "An internal server error occurred." });
     });
   });
+
+  // Get all permissions from all roles for a user
+  router.get("/:id/permissions", User.$middleware({ required: false }), async (req, res) => {
+    let { id } = req.params;
+    let user: Promise<User | null> = getMeOrId(req, id);
+
+    user.then((user) => {
+      if (!user) {
+        return res.status(404).json({ message: "User not found." });
+      }
+
+      user.getRoles().then(async (roles) => {
+        const permissions = uniqueList((await Promise.all(roles.map(role => role.getFullPermissionList()))).flat());
+        return res.json({
+          permissions: permissions,
+        })
+      });
+    }).catch((err) => {
+      console.error(err);
+      return res.status(500).json({ message: "An internal server error occurred." });
+    });
+  });
+
+
+  /**
+   * Used to get a user by ID or "me" (the current user)
+   */
+  async function getMeOrId(req: Request, id: string) {
+    const clientUser = User.getClientUser(req);
+    if (id === "me" && clientUser) {
+      return User.findByPk(clientUser.id);
+    }
+    else {
+      return User.findByPk(id);
+    }
+  }
 }
 
 export default UserController;

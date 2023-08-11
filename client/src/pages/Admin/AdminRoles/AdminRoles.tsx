@@ -7,7 +7,7 @@ import Modal, { useModal } from "../../../components/Modal/Modal"
 import "./AdminRoles.scss"
 
 export default function AdminRoles() {
-  const roles = UserApi.useRoles();
+  const roles = UserApi.useAvailableRoles();
   const [_updateI, _update] = React.useState(0);
   const forceUpdate = () => _update(_updateI + 1);
 
@@ -93,10 +93,12 @@ function RoleRow({ role, availableRoles, onEditFinished }: { role: RoleAttribute
         <br />
 
         <Button variant="success" onClick={() => {
-          role.name = name;
-          role.inherit = inherit ?? null!;
-          role.permissions = permissions.split(/,|\s/).map(s => s.trim()).filter(Boolean);
+          const newRole = { ...role };
+          newRole.name = name;
+          newRole.inherit = inherit ?? null!;
+          newRole.permissions = permissions.split(/,|\s/).map(s => s.trim()).filter(Boolean);
           UserApi.updateRole(role).then(() => {
+            Object.assign(role, newRole);
             close();
             onEditFinished?.();
           });
