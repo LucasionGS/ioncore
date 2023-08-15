@@ -43,7 +43,7 @@ if (redirectHTTPS) {
   });
 }
 
-app.use("/api", express.json(), ApiController.router);
+app.use("/api", ApiController.router);
 
 if (process.env.NODE_ENV === "development") {
   // Proxy React from port 12463 to port {port} (ioncore-server)

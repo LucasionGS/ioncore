@@ -64,12 +64,34 @@ namespace AppSystem {
   export const folders = {
     uploadFolder: Path.resolve(appDir, "_temp"),
     avatarFolder: Path.resolve(appDir, "avatars"),
+    assetFolder: Path.resolve(appDir, "assets"),
   }
 
+  /**
+   * Create folders if not exists
+   */
+  for (const key in folders) {
+    if (folders.hasOwnProperty(key)) {
+      const folder = folders[key as keyof typeof folders];
+      if (!fs.existsSync(folder)) {
+        fs.mkdirSync(folder, { recursive: true });
+        console.log(`Created folder: ${folder}`);
+      }
+    }
+  }
+
+  /**
+   * Max file size for upload
+   */
+  export const maxFileSize = (1024 * 1024) * 50; // MB
+  
+  /**
+   * Multer uploader for express
+   */
   export const uploader = multer({
     dest: AppSystem.folders.uploadFolder,
     limits: {
-      fileSize: 1024 * 1024 * 10, // 10 MB
+      fileSize: maxFileSize
     },
   });
 }

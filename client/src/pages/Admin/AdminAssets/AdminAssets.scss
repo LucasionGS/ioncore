@@ -1,0 +1,51 @@
+.admin-asset-block-container {
+  display: flex;
+  flex-direction: row;
+  align-items: start;
+  justify-content: start;
+  width: 100%;
+  flex-wrap: wrap;
+}
+.admin-asset-block {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 256px;
+  height: 256px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  margin: 8px;
+  overflow: hidden;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: all 0.2s ease-in-out;
+
+    &:hover {
+      cursor: pointer;
+      object-fit: scale-down;
+    }
+  }
+
+  .admin-asset-block-actions {
+    opacity: 0.5;
+    transition: all 0.2s ease-in-out;
+    position: absolute;
+    top: 0;
+    right: 0;
+    display: flex;
+    flex-direction: row;
+    align-items: end;
+    justify-content: start;
+  }
+
+  &:hover {
+    .admin-asset-block-actions {
+      opacity: 1;
+    }
+  }
+}

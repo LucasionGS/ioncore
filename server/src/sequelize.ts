@@ -125,28 +125,32 @@ export class User extends Model<UserAttributes, UserAttributesCreation> implemen
 
   public static $middleware(options?: {
     /**
-     * Whether or not authentication is required. Defaults to true.
+     * Whether or not authentication is required. Defaults to true.  
+     * If false, it is possible for the user to be null and all other options will be ignored.
+     * @default true
      */
     required?: boolean;
     /**
      * Whether or not the user must be an admin. Defaults to false.  
-     * If true, the `required` option is automatically set to true.
+     * @default false
      */
     admin?: boolean;
+    /**
+     * List of permissions required. If the user does not have any of these permissions, the request will be rejected.  
+     * If the user is an admin, this will be ignored.
+     * @default undefined
+     */
+    permissions?: string[];
   }) {
     options ??= {};
-    const { required = true, admin = false } = options;
+    const { required = true, admin = false, permissions } = options;
     return async (req: Request, res: Response, next: NextFunction) => {
       const token = req.headers.authorization?.split(" ")[1];
       if (!token) {
-        if (required || admin) {
+        if (required) {
           res.status(401).json({
             error: "Authentication required",
           });
-
-          if (admin) {
-            console.warn("Admin authentication required");
-          }
         } else {
           next();
         }
@@ -159,6 +163,23 @@ export class User extends Model<UserAttributes, UserAttributesCreation> implemen
         if (!user) {
           throw new Error("User not found");
         }
+        if (admin && !clientUser.isAdmin) {
+          res.status(401).json({
+            error: "Admin authentication required",
+          });
+          return;
+        }
+
+        if (permissions && !clientUser.isAdmin) {
+          const hasPermission = await Promise.all(permissions.map(permission => user.hasPermission(permission)));
+          if (!hasPermission.some(Boolean)) {
+            res.status(401).json({
+              error: "Permissions required: " + permissions.join(", "),
+            });
+            return;
+          }
+        }
+        
         (req as any).user = user;
         (req as any).clientUser = clientUser;
         next();
@@ -307,7 +328,7 @@ export class Role extends Model<RoleAttributes, RoleAttributesCreation> implemen
 
   public setPermissionList = (permissions: string[]) => this.permissions = uniqueList(permissions).join(",");
   public getPermissionList = () => this.permissions.split(",").filter(Boolean);
-  public addPermission = (permission: string) => this.setPermissionList(uniqueList([...this.getPermissionList(), permission]));
+  public addPermission = (...permissions: string[]) => this.setPermissionList(uniqueList([...this.getPermissionList(), ...permissions]));
   public removePermission = (permission: string) => this.setPermissionList(this.getPermissionList().filter(p => p !== permission));
   public hasPermission = (permission: string) => this.getPermissionList().includes(permission);
   public hasPermissionInherit = async (permission: string) => (await this.getFullPermissionList()).includes(permission);
@@ -436,5 +457,85 @@ UserRole.init({
   sequelize,
 });
 
+export interface AssetAttributesCreation {
+  name: string;
+  size: number;
+  type: string;
+}
+
+export interface AssetAttributes {
+  id: string;
+  name: string;
+  size: number;
+  type: string;
+}
+
+/**
+ * Represents an asset in the database. Each entry represents a file on the disk in the `assets` directory.
+ * 
+ * Asset directory can be accessed on `AppSystem.folders.assetFolder`.
+ */
+export class Asset extends Model<AssetAttributes, AssetAttributesCreation> implements AssetAttributes {
+  public id!: string;
+  public name!: string;
+  public size!: number;
+  public type!: string;
+
+  /**
+   * @param file File to set
+   * Register and add an asset. This will move the file to the assets folder.
+   */
+  public static async registerAsset(file: Express.Multer.File) {
+    const asset = await Asset.create({
+      name: file.originalname,
+      size: file.size,
+      type: file.mimetype,
+    });
+
+    // Move the file to the assets folder
+    fs.renameSync(file.path, Path.join(AppSystem.folders.assetFolder, asset.name));
+  }
+
+  public sendFile(res: Response) {
+    res.sendFile(this.name, {
+      root: AppSystem.folders.assetFolder,
+    });
+  }
+
+  public getFullPath() {
+    return Path.join(AppSystem.folders.assetFolder, this.name);
+  }
+  
+  /**
+   * Returns the file for this asset. This deletes the file from the assets folder and removes the asset from the database.
+   * 
+   * Do not use this object after calling this method.
+   */
+  public async deleteAsset() {
+    await Promise.all([fs.promises.unlink(this.getFullPath()).catch(a => Promise.resolve()), this.destroy()]);
+  }
+}
+
+Asset.init({
+  id: {
+    type: DataTypes.UUID,
+    defaultValue: DataTypes.UUIDV4,
+    primaryKey: true,
+  },
+  name: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  size: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+  },
+  type: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+}, {
+  sequelize,
+});
 
 export default sequelize;

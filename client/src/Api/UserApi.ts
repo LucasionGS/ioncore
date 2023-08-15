@@ -166,8 +166,6 @@ namespace UserApi {
       role = role.name;
     }
     const roles = await getUserRoles();
-    console.log(roles);
-    
     return roles.some(r => r.name === role);
   }
 

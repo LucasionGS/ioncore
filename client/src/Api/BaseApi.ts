@@ -28,9 +28,10 @@ namespace BaseApi {
     return token;
   }
 
-  export function getHeaders() {
+  export function getHeaders(options?: { avoidContentType?: boolean }) {
+    const { avoidContentType = false } = options || {};
     return {
-      "Content-Type": "application/json",
+      ...(avoidContentType ? {} : { "Content-Type": "application/json" }),
       ...(token ? { "Authorization": `Bearer ${token}` } : {}),
     };
   }
@@ -43,14 +44,18 @@ namespace BaseApi {
    * @param init Options to pass to `fetch`. Default options are passed automatically such as authentication headers.
    * @returns 
    */
-  export async function fetch(path: string, init: RequestInit | null = {}): Promise<Response> {
+  export async function fetch(
+    path: string,
+    init: RequestInit | null = {},
+    options?: { avoidContentType?: boolean }
+  ): Promise<Response> {
     while (path.startsWith("/")) {
       path = path.slice(1);
     }
     return await window.fetch(`${baseUrl}/${path}`, {
       ...(init || {}),
       headers: {
-        ...getHeaders(),
+        ...getHeaders(options),
         ...(init?.headers || {}),
       },
       credentials: "include",
@@ -70,6 +75,13 @@ namespace BaseApi {
     }
     return await fetch(path, {
       method: "GET",
+      ...(init || {}),
+    });
+  }
+
+  export async function DELETE(path: string, init: RequestInit | null = {}): Promise<Response> {
+    return await fetch(path, {
+      method: "DELETE",
       ...(init || {}),
     });
   }
@@ -100,8 +112,11 @@ namespace BaseApi {
     return await fetch(path, {
       method: "POST",
       ...(init || {}),
+      headers: {
+        ...(init?.headers || {}),
+      },
       body: (formData ? formData : init?.body),
-    });
+    }, { avoidContentType: true });
   }
 
   const isDeepEqual = (object1: Record<any, any>, object2: Record<any, any>) => {

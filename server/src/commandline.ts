@@ -38,7 +38,6 @@ async function commandline(args: string[]) {
 
     if (!adminRole) {
       console.log("Creating default admin role");
-      await Role.registerRole({ name: "admin" });
     }
   }
 }

@@ -3,7 +3,7 @@ import { Router, Routes } from "@ioncore/theme/Router";
 import logo from "../../assets/logo.svg";
 import BaseApi from "../../Api/BaseApi";
 import { Button, Paper } from "@ioncore/theme";
-import { IconArrowBack, IconHome, IconUsers } from "@tabler/icons-react";
+import { IconArrowBack, IconAsset, IconHome, IconUsers } from "@tabler/icons-react";
 import "./Admin.scss";
 import IoncoreLoader from "../../components/IoncoreLoader/IoncoreLoader";
 import { IconAccessible } from "@tabler/icons-react";
@@ -34,6 +34,14 @@ const subRouterPages: Routes = [
       return <AdminRolesPage />
     }
   },
+  {
+    title: "Admin | Assets",
+    path: /^\/admin\/assets$/,
+    component: async () => {
+      const AdminAssetsPage = (await import("./AdminAssets/AdminAssets")).default;
+      return <AdminAssetsPage />
+    }
+  },
 ];
 
 function AdminPage() {
@@ -45,6 +53,7 @@ function AdminPage() {
         <SidebarLink icon={<IconHome />} href="/admin">Home</SidebarLink>
         <SidebarLink icon={<IconUsers />} href="/admin/users">Users</SidebarLink>
         <SidebarLink icon={<IconAccessible />} href="/admin/roles">Roles</SidebarLink>
+        <SidebarLink icon={<IconAsset />} href="/admin/assets">Assets</SidebarLink>
       </div>
       <div className="admin-content">
         <Router pages={subRouterPages} loadingPage={() => <IoncoreLoader centered />} />
