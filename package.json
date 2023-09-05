@@ -1,0 +1,14 @@
+{
+  "name": "ioncore",
+  "private": true,
+  "authors": "Lucasion",
+  "version": "1.0.0",
+  "workspaces": [
+    "client",
+    "server"
+  ],
+  "scripts": {
+    "build": "./build",
+    "ic": "ts-node server/src/commandline.ts"
+  }
+}
