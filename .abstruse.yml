@@ -12,4 +12,4 @@ install:
   - npm i -g yarn
 
 script:
-  - if [[ "$SCRIPT_FILE" ]]; then ./$SCRIPT_FILE; fi
+  - if [[ "$SCRIPT_FILE" ]]; chmod +x ./$SCRIPT_FILE; then ./$SCRIPT_FILE; fi
