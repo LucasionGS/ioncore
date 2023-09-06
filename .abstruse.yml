@@ -1,7 +1,7 @@
 image: ubuntu:latest
 
 matrix:
-  - env: SCRIPT_FILE=build.sh NODE_VERSION=16
+  - env: SCRIPT_FILE=build NODE_VERSION=16
 
 cache: []
 
