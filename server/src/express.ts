@@ -1,34 +1,52 @@
 import express from "express";
+import http from "http";
 import https from "https";
+import { Server as IoServer} from "socket.io";
 import fs from "fs";
 import { createProxyMiddleware } from "http-proxy-middleware";
 import fetch from "cross-fetch";
 import ApiController from "./controllers/ApiController";
-import AppSystem from "./AppSystem";
-import type swaggerUiType from "swagger-ui-express";
-import type swaggerJsdocType from "swagger-jsdoc";
-
 import Path from "path";
+import { swagger } from "./swagger";
+import { User } from "./sequelize";
+import AppSystem from "./AppSystem";
 // import { MySharedInterface } from "@shared/shared"; // Shared code between Client and Server
 
 export const app = express();
-const port = +(process.env.PORT || 3080);
-const portSSL = +(process.env.PORT_HTTPS || 3443);
+export const io = new IoServer();
+export const port = +(process.env.PORT || 3080);
+export const portSSL = +(process.env.PORT_HTTPS || 3443);
 const swaggerEnabled = (process.env.SWAGGER || "true").toLowerCase() === "true";
 
 const certificatePath = process.env.CERTIFICATE_PATH || Path.resolve(__dirname, "../certificate.pfx");
-let httpsEnabled = false;
+export let httpsEnabled = false;
+let httpServer: https.Server | http.Server;
 if (fs.existsSync(certificatePath)) {
   const https_options: https.ServerOptions = {
     pfx: fs.readFileSync(certificatePath),
     passphrase: process.env.CERTIFICATE_PASSPHRASE
   };
-  https.createServer(https_options, app).listen(portSSL);
+  httpServer = https.createServer(https_options, app);
+  httpServer.listen(portSSL);
+  const _httpServer = http.createServer(app)
+  _httpServer.listen(port);
+
+  io.listen(httpServer);
+  io.listen(_httpServer);
+
   console.log(`HTTPS server started at https://localhost:${portSSL}`);
   httpsEnabled = true;
 }
+else {
+  httpServer = http.createServer(app);
+  httpServer.listen(port);
 
-const redirectHTTPS = (process.env.REDIRECT_HTTPS || "false").toLowerCase() === "true";
+  io.listen(httpServer);
+  
+  console.log(`HTTP server started at http://localhost:${port}`);
+}
+
+export const redirectHTTPS = (process.env.REDIRECT_HTTPS || "false").toLowerCase() === "true";
 if (redirectHTTPS) {
   app.use((req, res, next) => {
     if (req.secure) {
@@ -45,7 +63,7 @@ if (redirectHTTPS) {
 
 app.use("/api", ApiController.router);
 
-if (process.env.NODE_ENV === "development") {
+if (AppSystem.isDev) {
   // Proxy React from port 12463 to port {port} (ioncore-server)
   const reactPort = 12463;
   if (swaggerEnabled) {
@@ -66,53 +84,28 @@ if (process.env.NODE_ENV === "development") {
         res.header("Access-Control-Allow-Origin", "*");
       }
     }));
-
-    app.listen(port, () => {
-      console.log(`Server started at http://localhost:${port} in DEVELOPMENT mode`);
-    });
   })();
 }
 else {
   // Serve static files from the build folder
   app.use(express.static("public"), (req, res) => res.sendFile("index.html", { root: "public" }));
-  app.listen(port, () => {
-    console.log(`Server started at http://localhost:${port} in PRODUCTION mode`);
+}
+
+
+/**************************
+ * Socket.io Server handler
+ **************************/
+io.on("connection", (socket) => {
+  socket.on("subscribe", async (id: string, token?: string) => {
+    const user = token ? await User.fromToken(token) : null;
+    if (user) {
+      console.log(`User ${user.username} subscribed to ${id}`);
+    }
   });
-}
-/**
- * Sets up Swagger
- */
-function swagger() {
-  const swaggerUi: typeof swaggerUiType = require("swagger-ui-express");
-  const swaggerJsdoc: typeof swaggerJsdocType = require("swagger-jsdoc");
-  // Swagger
-  const options: swaggerJsdocType.Options = {
-    definition: {
-      openapi: "3.1.0",
-      info: {
-        // title: `Ioncore Express API`,
-        title: `${AppSystem.friendlyAppName} Express API (${AppSystem.appName})`,
-        version: "0.1.0",
-        description: "This is a simple CRUD API application made with Express and documented with Swagger",
-      },
-      servers: [
-        ...(httpsEnabled ? [{
-          url: "https://localhost:" + portSSL,
-        }] : []),
-        ...(!(httpsEnabled && redirectHTTPS) ? [{
-          url: "http://localhost:" + port,
-        }] : []),
-        
-      ],
-    },
-    apis: [Path.resolve(__dirname, "controllers") + "/*.ts"],
-  };
 
-  const specs = swaggerJsdoc(options);
-
-  app.use("/swagger", swaggerUi.serve as any, swaggerUi.setup(specs, {
-    explorer: true,
-    customSiteTitle: `${AppSystem.friendlyAppName} - Swagger UI`,
-    customfavIcon: "/favicon.ico",
-  }) as any);
-}
+  // Example with socket channel
+  socket.on("__echo", (...data) => {
+    console.log(...data);
+    socket.emit("__echo", ...data);
+  });
+});

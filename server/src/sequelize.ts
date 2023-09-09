@@ -191,6 +191,15 @@ export class User extends Model<UserAttributes, UserAttributesCreation> implemen
     };
   }
 
+  public static async fromToken(token: string) {
+    const clientUser = jwt.verify(token, process.env.JWT_SECRET!) as ClientUser;
+    const user = await User.findByPk(clientUser.id);
+    if (!user) {
+      throw new Error("User not found");
+    }
+    return user;
+  }
+  
   public static getAuthenticatedUser(req: Request) {
     return ((req as any).user as User) || null;
   }
@@ -323,7 +332,7 @@ export const uniqueList = (list: string[]) => [...new Set(list)].filter(Boolean)
 export class Role extends Model<RoleAttributes, RoleAttributesCreation> implements RoleAttributes {
   public id!: string;
   public name!: string;
-  public inherit!: string;
+  public inherit?: string;
   public permissions!: string;
 
   public setPermissionList = (permissions: string[]) => this.permissions = uniqueList(permissions).join(",");
@@ -395,6 +404,35 @@ export class Role extends Model<RoleAttributes, RoleAttributesCreation> implemen
       inherit: this.inherit,
       permissions: this.getPermissionList(),
     };
+  }
+
+  /**
+   * Checks if this role inherits from another role. This will check recursively.  
+   * This can also be used to check if a role inherits from itself.
+   * @param role Role to check
+   * @returns 
+   */
+  public async inheritsFrom(role: Role | string): Promise<boolean> {
+    if (typeof role === "string") {
+      return Role.getRoleByName(role).then(role => {
+        if (!role) {
+          return false;
+        }
+        return this.inheritsFrom(role);
+      });
+    }
+    if (this.id === role.id) {
+      return true;
+    }
+    if (this.inherit) {
+      return Role.getRoleById(this.inherit).then(parent => {
+        if (!parent) {
+          return false;
+        }
+        return parent.inheritsFrom(role);
+      });
+    }
+    return false;
   }
 }
 

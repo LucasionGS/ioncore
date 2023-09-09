@@ -1,14 +1,13 @@
-import { Button, Checkbox, CheckboxGroup, Input, Paper, Select } from '@ioncore/theme'
+import { Button, Checkbox, CheckboxGroup, Input, Paper, Select, Modal, useModal } from '@ioncore/theme'
 import { ClientUser, RoleAttributes, RoleAttributesObject } from '@shared/models';
 import React from 'react'
 import UserApi from '../../../Api/UserApi';
 import { IconEdit, IconEye, IconTrash } from '@tabler/icons-react';
-import Modal, { useModal } from "../../../components/Modal/Modal"
 import './AdminUsers.scss'
 
 export default function AdminUsers() {
   const users = useUsers();
-  const roles = UserApi.useAvailableRoles();
+  const [roles] = UserApi.useAvailableRoles();
   const [_updateI, _update] = React.useState(0);
   const forceUpdate = () => _update(_updateI + 1);
   
@@ -58,11 +57,11 @@ function UserRow({ user, availableRoles, onEditFinished }: { user: ClientUser, a
         <td>{user.roles?.length ?? 0} roles</td>
         <td>
           <Button variant="primary" onClick={open}><IconEdit /></Button>
-          <Button variant="secondary"><IconEye /></Button>
-          <Button variant="danger"><IconTrash /></Button>
+          {/* <Button variant="secondary"><IconEye /></Button> */}
+          {/* <Button variant="danger"><IconTrash /></Button> */}
         </td>
       </tr>
-      <Modal opened={isOpen} onClose={() => {
+      <Modal transition="none" opened={isOpen} onClose={() => {
         setUsername(user.username);
         setRoles(user.roles ?? []);
         close();

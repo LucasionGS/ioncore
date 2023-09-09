@@ -167,6 +167,59 @@ namespace UserController {
     });
   });
 
+  router.post("/roles", User.$middleware({ required: true }), async (req, res) => {
+    const roleData = req.body as Partial<RoleAttributesObject>;
+    delete roleData.id; // Prevents changing the ID
+    const clientUser = User.getClientUser(req);
+    const user = User.getAuthenticatedUser(req);
+
+    if (!(
+      clientUser.isAdmin
+      || await user.hasPermission("ROLES_EDIT")
+    )) {
+      return res.status(403).json({ message: "You do not have permission to edit roles." });
+    }
+
+    const attr: Partial<RoleAttributes> = {
+      ...roleData,
+      permissions: roleData.permissions?.join(",") ?? undefined,
+    }
+
+    if (!attr.name) { // Ensure the role has a default name
+      let index = 1;
+      while (true) {
+        attr.name = `role${index}`;
+        if (!(await Role.findOne({ where: { name: attr.name } }))) {
+          break;
+        }
+        index++;
+      }
+    }
+    else {
+      const roleExisting = await Role.findOne({ where: { name: roleData.name } });
+      if (roleExisting) {
+        return res.status(404).json({ message: "Role already exists." });
+      }
+    }
+
+    const role = await Role.create(attr as typeof attr & { name: string });
+    if (role.inherit) {
+      const parent = await Role.findByPk(role.inherit);
+      if (!parent) {
+        return res.status(404).json({ message: "Parent role not found." });
+      }
+      const cycles = await parent.inheritsFrom(role);
+      if (cycles) {
+        await role.update({ inherit: null! });
+        return res.status(400).json({ message: "Cyclic inheritance is not allowed." });
+      }
+    }
+
+    return res.json({
+      role: role.toJSON(),
+    });
+  });
+
   router.put("/roles/:id", User.$middleware({ required: true }), async (req, res) => {
     const { id } = req.params;
     const roleData = req.body as Partial<RoleAttributesObject>;
@@ -192,9 +245,44 @@ namespace UserController {
     }
 
     await role.update(attr);
+    if (role.inherit) {
+      const parent = await Role.findByPk(role.inherit);
+      if (!parent) {
+        return res.status(404).json({ message: "Parent role not found." });
+      }
+      const cycles = await parent.inheritsFrom(role);
+      if (cycles) {
+        await role.update({ inherit: null! });
+        return res.status(400).json({ message: "Cyclic inheritance is not allowed." });
+      }
+    }
 
     return res.json({
       role: role.toJSON(),
+    });
+  });
+
+  router.delete("/roles/:id", User.$middleware({ required: true }), async (req, res) => {
+    const { id } = req.params;
+    const clientUser = User.getClientUser(req);
+    const user = User.getAuthenticatedUser(req);
+
+    if (!(
+      clientUser.isAdmin
+      || await user.hasPermission("ROLES_EDIT")
+    )) {
+      return res.status(403).json({ message: "You do not have permission to edit roles." });
+    }
+
+    const role = await Role.findByPk(id);
+    if (!role) {
+      return res.status(404).json({ message: "Role not found." });
+    }
+
+    await role.destroy();
+
+    return res.json({
+      message: "Role deleted.",
     });
   });
 

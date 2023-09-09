@@ -4,9 +4,12 @@ import Path from "path";
 import multer from "multer";
 
 namespace AppSystem {
+  /** User friendly application name */
   export const friendlyAppName = "Ioncore Application";
+  /** Computer friendly application name. Used for folder names so it should only contain letters, numbers and underscores. */
   export const appName = "ioncore_app";
-  export const debug = process.env.NODE_ENV === "development";
+  /** `true` if `NODE_ENV` is `development` */
+  export const isDev = process.env.NODE_ENV === "development";
 
   export const platform = os.platform();
   export const isWindows = platform === "win32";

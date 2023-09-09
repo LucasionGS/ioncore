@@ -1,6 +1,7 @@
 import React from "react";
 import BaseApi from "./BaseApi";
 import { RoleAttributes, ClientUser, RoleAttributesObject } from "@shared/models"
+import { promiseUseHook } from "@ioncore/theme";
 
 namespace UserApi {
   export async function login(username: string, password: string) {
@@ -17,6 +18,13 @@ namespace UserApi {
       BaseApi.setUser(data);
       return data;
     });
+  }
+
+  export function logout(refresh = false) {
+    BaseApi.setUser(null);
+    if (refresh) {
+      window.location.reload();
+    }
   }
 
   export async function register(username: string, password: string) {
@@ -72,6 +80,25 @@ namespace UserApi {
   }
 
   /**
+   * Create a new role. If data is not provided, it will create a new role with default values.
+   * @admin
+   */
+  export async function createRole(role: Partial<Omit<RoleAttributesObject, "id">> = {}) {
+    return BaseApi.POST("/user/roles", null, role).then(async res => {
+      if (!res.ok) {
+        throw new Error((await res.json()).message || res.statusText);
+      }
+
+      return res.json() as Promise<{
+        role: RoleAttributesObject;
+      }>;
+    }).then(data => {
+      return data.role;
+    });
+  }
+  
+  /**
+   * Update a role.
    * @admin
    */
   export async function updateRole(role: RoleAttributesObject) {
@@ -85,6 +112,18 @@ namespace UserApi {
       }>;
     }).then(data => {
       return data.role;
+    });
+  }
+
+  /**
+   * Delete a role.
+   * @admin
+   */
+  export async function deleteRole(role: RoleAttributesObject) {
+    return BaseApi.DELETE("/user/roles/" + role.id).then(async res => {
+      if (!res.ok) {
+        throw new Error((await res.json()).message || res.statusText);
+      }
     });
   }
 
@@ -110,15 +149,7 @@ namespace UserApi {
    * React hook for getting a list of available roles.
    * @admin
    */
-  export function useAvailableRoles() {
-    const [roles, setRoles] = React.useState<RoleAttributesObject[] | null>(null);
-
-    React.useEffect(() => {
-      getAvailableRoles().then(setRoles);
-    }, []);
-
-    return roles;
-  }
+  export const useAvailableRoles = promiseUseHook(getAvailableRoles);
 
   /**
    * Get a list of a user's roles.

@@ -1,16 +1,15 @@
-import { Button, Checkbox, CheckboxGroup, Input, Paper, Select } from "@ioncore/theme"
+import { Button, Checkbox, CheckboxGroup, Input, Paper, Select, Modal, useModal } from "@ioncore/theme"
 import { ClientUser, RoleAttributes, RoleAttributesObject, AssetAttributes } from "@shared/models";
 import React from "react"
 import AssetApi from "../../../Api/AssetApi";
 import { IconEdit, IconEye, IconTrash } from "@tabler/icons-react";
-import Modal, { useModal } from "../../../components/Modal/Modal"
 import "./AdminAssets.scss"
 
 export default function AdminAssets() {
   const [assets, updateAssets] = AssetApi.useAssets();
   const [selectedAssets, setSelectedAssets] = React.useState<AssetAttributes[]>([]);
   const [_updateI, _update] = React.useState(0);
-  const forceUpdate = () => _update(_updateI + 1);
+  // const forceUpdate = () => _update(_updateI + 1);
 
   const { isOpen: isOpenDeleteMultiple, open: openDeleteMultiple, close: closeDeleteMultiple } = useModal();
 
@@ -61,7 +60,7 @@ export default function AdminAssets() {
           />
         ))}
       </div>
-      <Modal closeOnOutsideClick opened={isOpenDeleteMultiple} onClose={() => {
+      <Modal transition="none" closeOnOutsideClick opened={isOpenDeleteMultiple} onClose={() => {
         closeDeleteMultiple();
       }}>
         <h1>Delete {selectedAssets.length} assets?</h1>
@@ -113,7 +112,7 @@ function AssetItem({ asset, selectedAssets, onEditFinished, onSelectChange }: { 
           <Checkbox checked={selected} onChange={(c) => onSelectChange?.(c)} />
         </div>
       </div>
-      <Modal closeOnOutsideClick opened={isOpenView} onClose={() => {
+      <Modal transition="none" closeOnOutsideClick opened={isOpenView} onClose={() => {
         closeView();
       }}>
         <p>{asset.name}</p>
@@ -122,7 +121,7 @@ function AssetItem({ asset, selectedAssets, onEditFinished, onSelectChange }: { 
         }}>Done</Button>
         <Button variant="danger" onClick={openDelete}>Delete</Button>
       </Modal>
-      <Modal closeOnOutsideClick opened={isOpenDelete} onClose={() => {
+      <Modal transition="none" closeOnOutsideClick opened={isOpenDelete} onClose={() => {
         closeDelete();
       }}>
         <h1>Delete {asset.name}?</h1>
